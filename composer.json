@@ -1,0 +1,26 @@
+{
+	"name": "dennesabing/dxuser",
+	"type": "library",
+	"description": "User Module",
+	"keywords": ["support","zf2", "application"],
+	"homepage": "https://github.com/dennesabing/dxapp",
+	"license": "MIT",
+	"authors": [
+	{
+		"name": "Dennes B Abing",
+		"email": "dxapp@amigoas.com",
+		"homepage": "http://labs.madayaw.com",
+		"role": "Developer"
+	}
+	],
+	"require": {
+		"php": ">=5.3.0",
+		"dennesabing/dx" : "*"
+	},
+	"autoload": {
+		"psr-0": {
+			"DxUser": "src"
+		},
+		"classmap" : ["Module.php"]
+	}
+}
