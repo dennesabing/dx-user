@@ -1,5 +1,5 @@
 {
-	"name": "dennesabing/dxuser",
+	"name": "dennesabing/dx-user",
 	"type": "library",
 	"description": "User Module for ZF2",
 	"keywords": ["support","zf2", "application"],
