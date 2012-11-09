@@ -1,7 +1,7 @@
 {
 	"name": "dennesabing/dxuser",
 	"type": "library",
-	"description": "User Module",
+	"description": "User Module for ZF2",
 	"keywords": ["support","zf2", "application"],
 	"homepage": "https://github.com/dennesabing/dxapp",
 	"license": "MIT",
