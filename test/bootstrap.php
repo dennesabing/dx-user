@@ -16,7 +16,17 @@ class Bootstrap
 
     public static function init()
     {
-        $config = include __DIR__ . '/config.php.dist';
+		$global = array();
+		$local = array();
+		if(file_exists(__DIR__ . '/config.global.php'))
+		{
+			$global = include __DIR__ . '/config.global.php';
+		}
+		if(file_exists(__DIR__ . '/config.local.php'))
+		{
+			$local = include __DIR__ . '/config.local.php';
+		}
+		$config = array_merge_recursive($global, $local);
 		self::initAutoloader();
         $serviceManager = new ServiceManager(new ServiceManagerConfig());
         $serviceManager->setService('ApplicationConfig', $config);
