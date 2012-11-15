@@ -1,0 +1,17 @@
+<?php
+
+define('VENDOR_PATH', __DIR__ . '/../../../../gettingStarted/public/dxapp/vendor');
+define('DX_PATH', __DIR__ . '/../../../lib/DennesAbing/library/Dx');
+define('TEST_APP_ROOT',  __DIR__ . '/../../../../gettingStarted/public/dxapp');
+include_once  __DIR__ . '/../../../../gettingStarted/public/dxapp/test/bootstrap.php';
+
+return array(
+	'modules' => array(
+		'DxUser',
+	),
+	'module_listener_options' => array(
+		'module_paths' => array(
+			__DIR__ . '/../../'
+		)
+	),
+);
