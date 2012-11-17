@@ -37,13 +37,13 @@ class User extends ZfcUserEntity
 
 	/**
 	 * @Gedmo\Timestampable(on="create")
-	 * @ORM\Column(name="created", type="datetime")
+	 * @ORM\Column(name="created", type="datetime", nullable=true)
 	 */
 	private $created;
 
 	/**
 	 * @Gedmo\Timestampable(on="update")
-	 * @ORM\Column(name="updated", type="datetime")
+	 * @ORM\Column(name="updated", type="datetime", nullable=true)
 	 */
 	private $updated;
 
@@ -53,5 +53,24 @@ class User extends ZfcUserEntity
 		$this->isVerified = TRUE;
 		$this->isDeleted = FALSE;
 		$this->role = 'user';
+	}
+	
+	/**
+	 * Verify User email address
+	 * @return \DxUser\Entity\User 
+	 */
+	public function verifyEmailAddress()
+	{
+		$this->isVerified = TRUE;
+		return $this;
+	}
+	
+	/**
+	 * Check if user email address is already verified
+	 * @return boolean
+	 */
+	public function isEmailVerified()
+	{
+		return $this->isVerified;
 	}
 }

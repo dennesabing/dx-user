@@ -15,6 +15,6 @@ class UserCodes extends EntityRepository
 	 */
 	public function findUserCode($user, $typeOf, $code)
 	{
-		return $this->findOneBy(array('user_id' => $user->getId(), 'typeof' => $typeOf));
+		return $this->findOneBy(array('userId' => $user->getId(), 'typeOf' => $typeOf));
 	}
 }

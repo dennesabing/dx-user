@@ -10,17 +10,19 @@ use Zend\Crypt\Password\Bcrypt;
 
 class UserTest extends BaseTestCase
 {
+
 	public function setup()
 	{
+		$this->dropDb = FALSE;
 		$this->entities = array(
-			'DxUser\Entity\User',
+			'DxCdRace\Entity\User',
 			'DxUser\Entity\UserCodes'
 		);
 		parent::setup();
 		$this->repoUser = $this->em->getRepository('DxUser\Entity\User');
 		$this->repoUserCodes = $this->em->getRepository('DxUser\Entity\UserCodes');
 	}
-	
+
 	public function hashPassword($password)
 	{
 		$zfUserOption = $this->getServiceManager()->get('zfcuser_module_options');
@@ -29,7 +31,7 @@ class UserTest extends BaseTestCase
 		$pass = $bcrypt->create($password);
 		return $pass;
 	}
-	
+
 	public function getUserJuan()
 	{
 		$u = new User();
@@ -49,15 +51,24 @@ class UserTest extends BaseTestCase
 		$u->setPassword($this->hashPassword('abc123'));
 		return $u;
 	}
-	
+
 	public function testUserEmailVerify()
 	{
-		$userService = new UserService();
-		$userService->setEntityManager($this->em);
+		$userService = $this->getServiceManager()->get('dxuser_service_user');
 		$user = $this->getUserJuan();
 		$this->em->persist($user);
-		
+		$this->em->flush();
 		$userCode = $userService->register($user);
+		if ($userService->getOptions()->getEnableEmailVerification())
+		{
+			$this->assertTrue($userService->getOptions()->getEnableEmailVerification());
+			$userCodeRow = $this->repoUserCodes->findUserCode($user, $userCode->getTypeOf(), $userCode->getCode());
+			$this->assertEquals($userCode->getCode(), $userCodeRow->getCode());
+		}
+		else 
+		{
+			$this->assertFalse($userService->getOptions()->getEnableEmailVerification());
+		}
 	}
 
 }

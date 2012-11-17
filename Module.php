@@ -45,18 +45,21 @@ class Module
 		);
 	}
 	
+	
     public function getServiceConfig()
     {
         return array(
             'factories' => array(
                 'dxuser_module_options' => function ($sm) {
                     $config = $sm->get('Config');
-                    return new \DxUser\Options\Module(isset($config['dxcuser']) ? $config['dxcuser'] : array());
+                    return new \DxUser\Options\ModuleOptions(isset($config['dxuser']) ? $config['dxuser'] : array());
                 },
                 'dxuser_service_user' => function ($sm) {
                     $userService = new \DxUser\Service\User();
 					$userService->setEntityManager($sm->get('doctrine.entitymanager.orm_default'));
                     $userService->setOptions($sm->get('dxuser_module_options'));
+					$userService->setViewRenderer($sm->get('ViewRenderer'));
+					return $userService;
                 },
 			)
 		);

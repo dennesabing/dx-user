@@ -1,6 +1,12 @@
 <?php
 
-$config = array();
+$config = array(
+	'view_manager' => array(
+		'template_path_stack' => array(
+			'dxuser' => __DIR__ . '/../view',
+		),
+	),	
+);
 $config['doctrine'] = array(
 	'driver' => array(
 		'DxUser_driver' => array(

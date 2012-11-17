@@ -5,13 +5,14 @@ namespace DxUser\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use DxUser\Entity\UserCodesIterface;
 
 /**
  * @ORM\Table(name="user_codes")
  * @ORM\Entity(repositoryClass="DxUser\Entity\Repository\UserCodes")
  * @ORM\HasLifecycleCallbacks
  */
-class UserCodes
+class UserCodes implements UserCodesInterface
 {
 
 	/**
@@ -35,7 +36,7 @@ class UserCodes
 	/**
 	 * @ORM\Column(name="typeof", type="string", length=255)
 	 */
-	private $tyepOf;
+	private $typeOf;
 
 	/**
 	 * @ORM\Column(name="code", type="string", length=255)
