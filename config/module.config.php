@@ -12,7 +12,7 @@ $config['doctrine'] = array(
 		'DxUser_driver' => array(
 			'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
 			'cache' => 'memcache',
-			'paths' => array('/../src/DxUser/Entity')
+			'paths' => array(__DIR__ . '/../src/DxUser/Entity')
 		),
 		'orm_default' => array(
 			'drivers' => array(
