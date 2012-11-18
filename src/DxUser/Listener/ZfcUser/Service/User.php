@@ -22,7 +22,7 @@ class User implements ListenerAggregateInterface
 	 */
 	public function attach(EventManagerInterface $events, $priority = 1)
 	{
-		$this->listeners[] = $events->attach('register.pre', array($this, 'preRegister'), $priority);
+		$this->listeners[] = $events->attach('register', array($this, 'preRegister'), $priority);
 		$this->listeners[] = $events->attach('register.post', array($this, 'postRegister'), $priority);
 	}
 
@@ -45,11 +45,12 @@ class User implements ListenerAggregateInterface
 
 	/**
 	 * Do something Post. ZfcUser Register
-	 * @param type $e 
+	 * @param Zend\EventManager\Event $e
 	 */
 	public function postRegister($e)
 	{
-		
+		$userService = $this->serviceManager->get('dxuser_service_user');
+		$userService->register($e->getParam('user'));
 	}
 	
 	/**
@@ -59,5 +60,16 @@ class User implements ListenerAggregateInterface
 	public function preRegister($e)
 	{
 		
+	}
+	
+	/**
+	 * Set the SErvice Manager
+	 * @param type $sm
+	 * @return \DxUser\Listener\ZfcUser\Service\User 
+	 */
+	public function setServiceManager($sm)
+	{
+		$this->serviceManager = $sm;
+		return $this;
 	}
 }

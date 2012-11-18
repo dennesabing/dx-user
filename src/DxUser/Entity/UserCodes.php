@@ -24,7 +24,7 @@ class UserCodes implements UserCodesInterface
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="DxUser\Entity\User")
-	 * @ORM\JoinColumn(name="user_id", referencedColumnName="user_id")
+	 * @ORM\JoinColumn(name="user_id", referencedColumnName="user_id", onDelete="CASCADE")
 	 */
 	private $user;
 

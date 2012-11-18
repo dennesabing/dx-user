@@ -65,10 +65,43 @@ class UserTest extends BaseTestCase
 			$userCodeRow = $this->repoUserCodes->findUserCode($user, $userCode->getTypeOf(), $userCode->getCode());
 			$this->assertEquals($userCode->getCode(), $userCodeRow->getCode());
 		}
-		else 
+		else
 		{
 			$this->assertFalse($userService->getOptions()->getEnableEmailVerification());
 		}
+	}
+
+	public function testResetPassword()
+	{
+		$userService = $this->getServiceManager()->get('dxuser_service_user');
+		$user = $this->getUserJuan();
+		$this->em->persist($user);
+		$this->em->flush();
+		$userCode = $userService->resetPassword($user->getEmail());
+		$userCodeRow = $this->repoUserCodes->findUserCode($user, $userCode->getTypeOf(), $userCode->getCode());
+		$this->assertEquals($userCode->getCode(), $userCodeRow->getCode());
+		$this->assertEquals($userCode->getTypeOf(), 'reset-password');
+	}
+
+	public function testChangeResetPassword()
+	{
+		$userService = $this->getServiceManager()->get('dxuser_service_user');
+		$user = $this->getUserJuan();
+		$this->em->persist($user);
+		$this->em->flush();
+		$userCode = $userService->resetPassword($user->getEmail());
+		$newPassword = time();
+		$data = array(
+			'email' => $user->getEmail(),
+			'code' => $userCode->getCode(),
+			'newCredential' => $newPassword
+		);
+		$bcrypt = new Bcrypt;
+		$bcrypt->setCost($userService->getZfcUserOptions()->getPasswordCost());
+		$userService->changeResetPassword($data);
+		$userRepo = $this->em->getRepository($userService->getOptions()->getUserEntityClass());
+		$user = $userRepo->findByEmail($user->getEmail());
+		$this->assertTrue($bcrypt->verify($newPassword, $user->getPassword()));
 	}
 
 }
