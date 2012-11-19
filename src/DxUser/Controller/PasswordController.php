@@ -21,7 +21,7 @@ class PasswordController extends ZfcUserController
 
 	public function passwordAction()
 	{
-		$this->layout('layout/2column-rightbar');
+		$this->layout($this->dxController()->layout('layout/2column-rightbar'));
 		if (!$this->zfcUserAuthentication()->hasIdentity())
 		{
 			$viewData = array();
@@ -33,9 +33,10 @@ class PasswordController extends ZfcUserController
 				if ($form->isValid())
 				{
 					$validData = $form->getData();
-					$userService = $this->getUserService()->resetPassword($validData['fsMain']['email']);
-					if($userService)
+					$userCode = $this->getUserService()->resetPassword($validData['fsMain']['email']);
+					if($userCode)
 					{
+						$viewData['userCode'] = $userCode;
 						$viewData['success'] = TRUE;
 					}
 					else

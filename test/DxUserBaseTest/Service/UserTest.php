@@ -19,7 +19,7 @@ class UserTest extends BaseTestCase
 			'DxUser\Entity\UserCodes'
 		);
 		parent::setup();
-		$this->repoUser = $this->em->getRepository('DxUser\Entity\User');
+		$this->repoUser = $this->em->getRepository('DxCdRace\Entity\User');
 		$this->repoUserCodes = $this->em->getRepository('DxUser\Entity\UserCodes');
 	}
 

@@ -1,8 +1,8 @@
 <h1>Sign In</h1>
 
 <?php
-$routeRegister = $this->dxModuleOptions()->getOptions('dxuser')->getRouteRegistration();
-$routePasswordReset = $this->dxModuleOptions()->getOptions('dxuser')->getRoutePasswordReset();
+$routeRegister = $this->dxConfig()->getOptions('dxuser')->getRouteRegistration();
+$routePasswordReset = $this->dxConfig()->getOptions('dxuser')->getRoutePasswordReset();
 $form = $this->loginForm;
 $form->prepare();
 $form->setAttribute('action', $this->url('dx-user-login'));

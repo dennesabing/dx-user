@@ -20,7 +20,7 @@ class LoginController extends ZfcUserController
 
 	public function loginAction()
 	{
-		$this->layout('layout/2column-rightbar');
+		$this->layout($this->dxController()->layout('layout/2column-rightbar'));
 		if (!$this->zfcUserAuthentication()->hasIdentity())
 		{
 			return parent::loginAction();
