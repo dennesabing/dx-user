@@ -48,10 +48,13 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	{
 		if ($this->getOptions()->getEnableEmailVerification())
 		{
+			$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+			$typeOf = 'verify-email';
+			$userCodesRepo->removeCode($user, $typeOf);
 			$userCodeClass = $this->getOptions()->getEntityUserCode();
 			$userCode = new $userCodeClass;
 			$userCode->setUser($user);
-			$userCode->setTypeOf('verify-email');
+			$userCode->setTypeOf($typeOf);
 			$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
 			$this->em->persist($userCode);
@@ -135,10 +138,13 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 		$user = $userRepo->findByEmail($email);
 		if ($user)
 		{
+			$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+			$typeOf = 'reset-password';
+			$userCodesRepo->removeCode($user, $typeOf);
 			$userCodeEntity = $this->getOptions()->getEntityUserCode();
 			$userCode = new $userCodeEntity;
 			$userCode->setUser($user);
-			$userCode->setTypeOf('reset-password');
+			$userCode->setTypeOf($typeOf);
 			$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
 			$this->em->persist($userCode);
@@ -177,16 +183,20 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	 */
 	public function verifyResetPassword(array $data)
 	{
-		if (isset($data['user']) && isset($data['code']))
+		if (isset($data['email']) && isset($data['code']))
 		{
-			$user = $data['user'];
-			$code = $data['code'];
-			$typeOf = 'reset-password';
-			$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
-			$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
-			if ($userCode)
+			$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+			$user = $userRepo->findByEmail($data['email']);
+			if ($user)
 			{
-				return $userCode;
+				$code = $data['code'];
+				$typeOf = 'reset-password';
+				$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+				$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
+				if ($userCode)
+				{
+					return $userCode;
+				}
 			}
 		}
 		return FALSE;

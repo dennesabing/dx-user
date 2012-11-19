@@ -112,11 +112,7 @@ $config = array(
 							'route' => '/:email/:code',
 							'defaults' => array(
 								'action' => 'verify',
-							),
-							'constraints' => array(
-								'code' => '[a-zA-Z][a-zA-Z0-9_-]*',
-								'email' => '[a-zA-Z][a-zA-Z0-9_-]*',
-							),
+							),	
 						),
 					),
 				),
