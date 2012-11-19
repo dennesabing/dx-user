@@ -31,7 +31,7 @@
 		"zf-commons/zfc-user-doctrine-orm": "dev-master",
 		"dlu/dlutwbootstrap": "dev-master",
 		"socalnick/scn-social-auth": "dev-master",
-		"socalnick/scn-social-auth-doctrine-orm": "dev-master"
+		"socalnick/scn-social-auth-doctrine-orm": "dev-master",
 		"dennesabing/dx" : "*",
 		"dennesabing/dxapp" : "*"
 	},
