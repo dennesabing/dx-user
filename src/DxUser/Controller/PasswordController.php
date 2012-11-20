@@ -27,7 +27,6 @@ class PasswordController extends ZfcUserController
 			$viewData = array();
 			$validData = NULL;
 			$form = $this->getPasswordResetForm();
-			$form->remove('fsReset');
 			if ($this->request->isPost())
 			{
 				$form->setData($this->request->getPost());
@@ -59,22 +58,29 @@ class PasswordController extends ZfcUserController
 		$this->layout('layout/2column-rightbar');
 		$email = urldecode($this->getEvent()->getRouteMatch()->getParam('email'));
 		$code = $this->getEvent()->getRouteMatch()->getParam('code');
+		$validData = array();
 		if (!empty($email) && !empty($code) && strlen($code) == 32)
 		{
 			$viewData = array();
 			$userCode = $this->getUserService()->verifyResetPassword(array('email' => $email, 'code' => $code));
 			if ($userCode)
 			{
-				$form = $this->getPasswordResetForm();
+				$form = $this->getPasswordResetChangeForm();
 				if ($this->request->isPost())
 				{
-					$form->setData($this->request->getPost());
+					$form->setData($this->getRequest()->getPost());
 					if ($form->isValid())
 					{
 						$validData = $form->getData();
-						$userCode = $this->getUserService()->resetPassword($validData['fsMain']['email']);
+						$data = array(
+							'newCredential' => $validData['fsMain']['newPassword'],
+							'email' => $email,
+							'code' => $code
+						);
+						$userCode = $this->getUserService()->changePassword($data);
 						if ($userCode)
 						{
+							
 							$viewData['userCode'] = $userCode;
 							$viewData['success'] = TRUE;
 						}
@@ -83,9 +89,11 @@ class PasswordController extends ZfcUserController
 							$viewData['error'] = TRUE;
 						}
 					}
+					else
+					{
+						$viewData['error'] = TRUE;
+					}
 				}
-				$form->remove('fsMain');
-
 				$viewData['form'] = $form;
 				$viewData['validData'] = $validData;
 				$viewData['formDisplayOptions'] = $form->getDisplayOptions();
@@ -104,6 +112,11 @@ class PasswordController extends ZfcUserController
 	public function getPasswordResetForm()
 	{
 		return $this->getServiceLocator()->get('dxuser_form_password_reset');
+	}
+
+	public function getPasswordResetChangeForm()
+	{
+		return $this->getServiceLocator()->get('dxuser_form_password_reset_change');
 	}
 
 	protected function getModuleOptions()

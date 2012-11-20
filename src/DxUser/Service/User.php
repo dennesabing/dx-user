@@ -38,39 +38,64 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	protected $options = NULL;
 
 	/**
+	 * The Auth service
+	 * @var type 
+	 */
+	protected $authService = NULL;
+
+	/**
 	 * Two Stage SignUp
 	 *
 	 * @param array $data The User Object
 	 * @return \DxUser\Entity\UserCodes|NULL
 	 * @throws Exception\InvalidArgumentException
 	 */
-	public function register($user)
+	public function register($data)
 	{
-		if ($this->getOptions()->getEnableEmailVerification())
+		if (is_array($data))
 		{
-			$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
-			$typeOf = 'verify-email';
-			$userCodesRepo->removeCode($user, $typeOf);
-			$userCodeClass = $this->getOptions()->getEntityUserCode();
-			$userCode = new $userCodeClass;
-			$userCode->setUser($user);
-			$userCode->setTypeOf($typeOf);
-			$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
-			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
-			$this->em->persist($userCode);
-			$this->em->flush();
-			$this->sendVerifyEmail($userCode);
-			$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'userCode' => $userCode));
-			return $userCode;
-		}
-		else
-		{
-			return NULL;
+			$userClass = $this->getOptions()->getUserEntityClass();
+			$user = new $userClass;
+			$user->setEmail($data['fsMain']['email']);
+			$user->setPassword($data['fsMain']['newPassword']);
+
+			$bcrypt = new Bcrypt;
+			$bcrypt->setCost($this->getZfcUserOptions()->getPasswordCost());
+			$user->setPassword($bcrypt->create($user->getPassword()));
+
+			if ($this->getZfcUserOptions()->getEnableUsername())
+			{
+				$user->setUsername($data['username']);
+			}
+			if ($this->getZfcUserOptions()->getEnableDisplayName())
+			{
+				$user->setDisplayName($data['display_name']);
+			}
+			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
+			$this->getUserMapper()->insert($user);
+			if ($this->getOptions()->getEnableEmailVerification())
+			{
+				$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+				$typeOf = 'verify-email';
+				$userCodesRepo->removeCode($user, $typeOf);
+				$userCodeClass = $this->getOptions()->getEntityUserCode();
+				$userCode = new $userCodeClass;
+				$userCode->setUser($user);
+				$userCode->setTypeOf($typeOf);
+				$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
+				$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
+				$this->em->persist($userCode);
+				$this->em->flush();
+				$this->sendVerifyEmail($userCode);
+				$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'userCode' => $userCode));
+			}
+			$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user));
+			return $user;
 		}
 	}
 
 	/**
-	 * Send email
+	 * Send email to new registered user
 	 * @param object $userCode 
 	 */
 	public function sendVerifyEmail(UserCodesInterface $userCode)
@@ -90,7 +115,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	}
 
 	/**
-	 * Check user email verification
+	 * Check user during email verification
 	 * And verify user if needed.
 	 * @param array $data 
 	 * @throws Exception\InvalidArgumentException
@@ -245,10 +270,11 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 		$code = $data['code'];
 		$email = $data['email'];
 		$newPassword = $data['newCredential'];
+		$typeOf = 'reset-password';
 		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
 		$user = $userRepo->findByEmail($email);
 		$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
-		$userCode = $userCodesRepo->findUserCode($user, 'reset-password', $code);
+		$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
 		if ($userCode)
 		{
 			$bcrypt = new Bcrypt;
@@ -258,8 +284,10 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 			$user->setPassword($pass);
 
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
+			$this->changedPasswordSendEmail($newPassword, $userCode);
 			$this->em->persist($user);
 			$this->em->remove($userCode);
+			$userCodesRepo->removeCode($user, $typeOf);
 			$this->em->flush();
 			$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user));
 			return TRUE;
@@ -267,6 +295,37 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 		return FALSE;
 	}
 
+	/**
+	 * Notify Account owner of a password changed through email
+	 * @param UserCodes $userCode
+	 */
+	public function changedPasswordSendEmail($newCredential, $userCode)
+	{
+		$message = new Message();
+		$message->addFrom($this->getOptions()->getEmailNoReplySender(), $this->getOptions()->getEmailNoReplySender())
+				->addTo($userCode->getUser()->getEmail())
+				->setSubject($this->getOptions()->getEmailPasswordChangedSubject());
+		$viewModel = new ViewModel(array(
+					'userCode' => $userCode,
+					'newCredential' => $newCredential
+				));
+		$viewModel->setTemplate($this->getOptions()->getTemplateChangedPasswordEmail());
+		$body = $this->renderer->render($viewModel);
+		$message->setBody($body);
+		$transport = new SendmailTransport($this->getServiceManager());
+		$transport->send($message);
+	}
+
+    /**
+     * getUserMapper
+     *
+     * @return UserMapperInterface
+     */
+    public function getUserMapper()
+    {
+		return $this->getServiceManager()->get('zfcuser_user_mapper');
+    }
+	
 	/**
 	 * getAuthService
 	 *
@@ -276,7 +335,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	{
 		if (null === $this->authService)
 		{
-			$this->authService = $this->getServiceManager()->get('zfcuser_auth_service');
+			$this->setAuthService($this->getServiceManager()->get('zfcuser_auth_service'));
 		}
 		return $this->authService;
 	}

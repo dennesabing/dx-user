@@ -5,12 +5,13 @@
 		<attributes>
 			<method>post</method>
 		</attributes>
+		<fieldset></fieldset>
 		<fieldsets>
 			<fsMain>
 				<name>fsMain</name>
 				<type>Zend\Form\Fieldset</type>
 				<options>
-					<legend>Enter your registered email address</legend>
+					<legend></legend>
 				</options>
 			</fsMain>
 		</fieldsets>
@@ -22,9 +23,16 @@
 				<type>Zend\Form\Element\Text</type>
 				<fieldset>fsMain</fieldset>
 				<options>
-					<label></label>
+					<label>Email Address</label>
 				</options>
 			</email>
+			<password>
+				<type>Zend\Form\Element\Password</type>
+				<fieldset>fsMain</fieldset>
+				<options>
+					<label>Password</label>
+				</options>
+			</password>
 			<submitBtn>
 				<type>Zend\Form\Element\Submit</type>
 				<options>
@@ -39,6 +47,19 @@
 		<inputFilter>
 			<fieldsets>
 				<fsMain>
+					<password>
+						<name>password</name>
+						<required>1</required>
+						<validators>
+							<not_empty>
+								<options>
+									<messages>
+										<isEmpty>Required.</isEmpty>
+									</messages>
+								</options>
+							</not_empty>
+						</validators>
+					</password>
 					<email>
 						<name>email</name>
 						<required>1</required>
@@ -58,17 +79,6 @@
 									</messages>
 								</options>
 							</email_address>
-							<record_exists>
-								<name>record_exists</name>
-								<options>
-									<mapper>getServiceManager|zfcuser_user_mapper</mapper>
-									<key>email</key>
-									<messages>
-										<noRecordFound><![CDATA[Email address not found.]]>
-										</noRecordFound>
-									</messages>
-								</options>
-							</record_exists>
 						</validators>
 					</email>
 				</fsMain>

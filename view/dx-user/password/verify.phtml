@@ -5,29 +5,19 @@ $this->dxBreadcrumb()->add('passwordReset', array('anchor' => 'Reset Password'))
 $this->dxHtml()->setTitle('Reset Password');
 if ($this->success)
 {
-	$verifyString = '';
-	if($this->dxConfig()->getOptions()->inDevelopment())
-	{
-		$verifyUrl = $this->dxHtml()->url('dx-user-password/verify', 
-				array('email' => urlencode($this->userCode->getUser()->getEmail()), 'code' => $this->userCode->getCode()),
-				array('useSecureUrl' => TRUE, 'useAbsoluteUrl' => TRUE));
-		$verifyString .= '<a id="urlPasswordVerify" href="' . $verifyUrl . '" title="Verify Now">' . $verifyUrl . '</a><br /><br />';
-	}
 	$html .= '<div class="alert alert-block alert-success">
 				<button type="button" class="close" data-dismiss="alert">×</button>
-				<h4>Email sent!</h4>
+				<h4>Password successfully changed!</h4>
 				<br />
-				We sent an email containing instruction on how to reset your password.
+				Your password is now updated. 
+				<br />We sent an email to your account email address of the changes in your account.
 				<br />
-				Kindly check your bulk or spam box for emails from us.
 				<br />
-				<br />
-				' . $verifyString . '
 				Thank you very much.
 			</div>';
-	$html .= '<a href="' . $this->url($this->dxConfig()->getOptions('dxuser')->getRouteMain()) . '" 
+	$html .= '<a href="' . $this->url('dx-user-login') . '" 
 		class="btn btn-large btn-primary">
-		<i class="icon-white icon-arrow-right"></i> Click here to continue...</a>';
+		<i class="icon-white icon-arrow-right"></i> Click here to login...</a>';
 }
 else
 {

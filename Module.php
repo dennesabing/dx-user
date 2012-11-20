@@ -59,22 +59,38 @@ class Module
 				'dxuser_service_user' => function ($sm)
 				{
 					$userService = new \DxUser\Service\User();
+					$userService->setAuthService($sm->get('zfcuser_auth_service'));
 					$userService->setEntityManager($sm->get('doctrine.entitymanager.orm_default'));
 					$userService->setOptions($sm->get('dxuser_module_options'));
 					$userService->setViewRenderer($sm->get('ViewRenderer'));
 					return $userService;
 				},
+				'dxuser_form_login' => function($sm)
+				{
+					$options = $sm->get('dxuser_module_options');
+					$form = new \Dxapp\Form\Form('login','login.xml', $options, $sm);
+					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('login.xml', $options, $sm));
+					return $form;
+				},
+				'dxuser_form_register' => function($sm)
+				{
+					$options = $sm->get('dxuser_module_options');
+					$form = new \Dxapp\Form\Form('register','register.xml', $options, $sm);
+					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('register.xml', $options, $sm));
+					return $form;
+				},
 				'dxuser_form_password_reset' => function($sm)
 				{
 					$options = $sm->get('dxuser_module_options');
-					$form = new \DxUser\Form\PasswordReset('passwordReset','passwordReset.xml', $options);
-					$form->setInputFilter(new \DxUser\Form\PasswordResetFilter(
-									new \ZfcUser\Validator\RecordExists(array(
-										'mapper' => $sm->get('zfcuser_user_mapper'),
-										'key' => 'email'
-									)),
-									$options
-					));
+					$form = new \Dxapp\Form\Form('passwordReset','passwordReset.xml', $options, $sm);
+					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('passwordReset.xml', $options, $sm));
+					return $form;
+				},
+				'dxuser_form_password_reset_change' => function($sm)
+				{
+					$options = $sm->get('dxuser_module_options');
+					$form = new \Dxapp\Form\Form('passwordReset','passwordResetChange.xml', $options, $sm);
+					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('passwordResetChange.xml', $options, $sm));
 					return $form;
 				},
 			)
