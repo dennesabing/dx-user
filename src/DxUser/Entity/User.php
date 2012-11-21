@@ -66,6 +66,16 @@ class User extends ZfcUserEntity
 	}
 	
 	/**
+	 * UN - Verify User email address
+	 * @return \DxUser\Entity\User 
+	 */
+	public function unVerifyEmailAddress()
+	{
+		$this->isVerified = FALSE;
+		return $this;
+	}
+	
+	/**
 	 * Check if user email address is already verified
 	 * @return boolean
 	 */

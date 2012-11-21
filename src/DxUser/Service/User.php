@@ -58,6 +58,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 			$user = new $userClass;
 			$user->setEmail($data['fsMain']['email']);
 			$user->setPassword($data['fsMain']['newPassword']);
+			$user->unVerifyEmailAddress();
 
 			$bcrypt = new Bcrypt;
 			$bcrypt->setCost($this->getZfcUserOptions()->getPasswordCost());
