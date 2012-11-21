@@ -50,7 +50,7 @@ class RegisterController extends ZfcUserController
 							}
 							$post['credential'] = $data['fsMain']['newPassword'];
 							$this->getRequest()->setPost(new Parameters($post));
-							return $this->forward()->dispatch('zfcuser', array('action' => 'authenticate'));
+							return $this->forward()->dispatch('AuthController', array('action' => 'index'));
 						}
 					}
 					 return $this->redirect()->toUrl($this->url()->fromRoute('zfcuser/login') . ($redirect ? '?redirect='.$redirect : ''));

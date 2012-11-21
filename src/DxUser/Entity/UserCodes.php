@@ -70,7 +70,7 @@ class UserCodes implements UserCodesInterface
 	{
 		$this->extraInfos = array();
 	}
-
+	
 	/**
 	 * Set the User Object
 	 * @param object $user

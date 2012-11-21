@@ -11,6 +11,7 @@ $config = array(
 			'DxUser\Controller\Register' => 'DxUser\Controller\RegisterController',
 			'DxUser\Controller\Account' => 'DxUser\Controller\AccountController',
 			'DxUser\Controller\Password' => 'DxUser\Controller\PasswordController',
+			'AuthController' => 'DxUser\Controller\AuthController',
 			'DxUser\Controller\Login' => 'DxUser\Controller\LoginController'
 		),
 	),
@@ -27,6 +28,17 @@ $config = array(
 					),
 				),
 				'may_terminate' => true,
+			),
+			'dx-user-auth' => array(
+				'type' => 'Literal',
+				'priority' => 10000,
+				'options' => array(
+					'route' => '/auth',
+					'defaults' => array(
+						'controller' => 'AuthController',
+						'action' => 'index',
+					),
+				),
 			),
 			'dx-user-register' => array(
 				'type' => 'Literal',

@@ -3,6 +3,7 @@
 namespace DxUser\Controller;
 
 use Zend\View\Model\ViewModel;
+use Zend\Stdlib\Parameters;
 use ZfcUser\Controller\UserController as ZfcUserController;
 
 class LoginController extends ZfcUserController
@@ -41,7 +42,31 @@ class LoginController extends ZfcUserController
 				$form->setData($this->getRequest()->getPost());
 				if ($form->isValid())
 				{
-					return $this->forward()->dispatch('zfcuser', array('action' => 'authenticate'));
+					$data = $form->getData();
+					$identityFields = $this->getUserService()->getZfcUserOptions()->getAuthIdentityFields();
+					if (in_array('email', $identityFields))
+					{
+						$post['identity'] = $data['fsMain']['email'];
+					}
+					elseif (in_array('username', $identityFields))
+					{
+						$post['identity'] = $data['fsMain']['username'];
+					}
+					$post['credential'] = $data['fsMain']['password'];
+					$this->getRequest()->setPost(new Parameters($post));
+					$auth = $this->authenticate($this->getRequest());
+					if (!$auth)
+					{
+						$viewData['error'] = TRUE;
+					}
+					else
+					{
+						if ($this->getUserService()->getZfcUserOptions()->getUseRedirectParameterIfPresent() && $redirect)
+						{
+							return $this->redirect()->toUrl($redirect);
+						}
+						return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
+					}
 				}
 			}
 			$viewData['redirect'] = $redirect;
@@ -49,9 +74,32 @@ class LoginController extends ZfcUserController
 			$viewData['validData'] = $validData;
 			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
 			$viewData['enableRegistration'] = $this->getOptions()->getEnableRegistration();
+			$viewData['scnSocialAuthOptions'] = $this->dxController()->getModuleOptions('ScnSocialAuth-ModuleOptions');
 			return new ViewModel($viewData);
 		}
 		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
+	}
+
+	protected function authenticate($request)
+	{
+		$adapter = $this->zfcUserAuthentication()->getAuthAdapter();
+		$result = $adapter->prepareForAuthentication($request);
+		if ($result instanceof Response)
+		{
+			return FALSE;
+		}
+		$auth = $this->zfcUserAuthentication()->getAuthService()->authenticate($adapter);
+		if (!$auth->isValid())
+		{
+			$adapter->resetAdapters();
+			return FALSE;
+		}
+		return TRUE;
+	}
+
+	public function getUserService()
+	{
+		return $this->getServiceLocator()->get('dxuser_service_user');
 	}
 
 	public function getLoginForm()

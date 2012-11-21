@@ -2,6 +2,10 @@
 
 $routeRegister = $this->dxConfig()->getOptions('dxuser')->getRouteRegistration();
 $routePasswordReset = $this->dxConfig()->getOptions('dxuser')->getRoutePasswordReset();
+if(isset($this->error))
+{
+	$this->dxAlert()->addError('<b>Login Error</b><br />Email address and Password don\'t match.');
+}
 $html = '';
 $this->dxBreadcrumb()->add('memberLogin', array('anchor' => 'Member Login'));
 $this->dxHtml()->setTitle('Member Login');
@@ -13,5 +17,16 @@ if ($this->enableRegistration) :
 endif;
 
 $html .= '<br /><a href="' . $this->url($routePasswordReset) . ($this->redirect ? '?redirect=' . $this->redirect : '') . '">Forgot Password?</a>';
+
+$socialButtons = '';
+foreach ($this->scnSocialAuthOptions->getEnabledProviders() as $provider) {
+    $socialButtons .= $this->dxHtml()->socialSignInButton($provider);
+}
+if(!empty($socialButtons))
+{
+	$socialButtons .= '<h2>Social Login</h2>';
+	$this->dxSidebar()->appendToRight('socialButtons', $socialButtons);
+}
+
 
 echo $html;
