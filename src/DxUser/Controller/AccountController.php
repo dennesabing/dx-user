@@ -26,4 +26,9 @@ class AccountController extends ZfcUser
 			
 		}
 	}
+	
+	public function passwordAction()
+	{
+		
+	}
 }

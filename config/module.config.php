@@ -84,6 +84,36 @@ $config = array(
 						'action' => 'account',
 					),
 				),
+				'may_terminate' => true,
+				'child_routes' => array(
+					'password' => array(
+						'type' => 'Segment',
+						'options' => array(
+							'route' => '/password',
+							'defaults' => array(
+								'action' => 'password',
+							),
+						),
+					),
+					'email' => array(
+						'type' => 'Segment',
+						'options' => array(
+							'route' => '/email',
+							'defaults' => array(
+								'action' => 'email',
+							),
+						),
+					),
+					'profile' => array(
+						'type' => 'Segment',
+						'options' => array(
+							'route' => '/profile',
+							'defaults' => array(
+								'action' => 'profile',
+							),
+						),
+					),
+				),
 			),
 			'zfcuser-account' => array(
 				'type' => 'Literal',
