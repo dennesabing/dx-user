@@ -93,6 +93,13 @@ class Module
 					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('passwordResetChange.xml', $options, $sm));
 					return $form;
 				},
+				'dxuser_form_account_password' => function($sm)
+				{
+					$options = $sm->get('dxuser_module_options');
+					$form = new \Dxapp\Form\Form('accountPasswordReset','accountPasswordReset.xml', $options, $sm);
+					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('accountPasswordReset.xml', $options, $sm));
+					return $form;
+				},
 			)
 		);
 	}

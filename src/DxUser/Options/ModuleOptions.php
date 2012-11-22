@@ -89,6 +89,12 @@ class ModuleOptions extends AbstractOptions
 	protected $templateChangedPasswordEmail = 'dx-user/email/changed-password';
 	
 	/**
+	 * Send email after a succesful password update
+	 * @var boolean
+	 */
+	protected $sendEmailAfterPasswordUpdate = TRUE;
+	
+	/**
 	 * The Login Route
 	 * @var string
 	 */
@@ -118,6 +124,23 @@ class ModuleOptions extends AbstractOptions
 	 */
 	protected $xmlFormFolder = NULL;
 
+	/**
+	 * Send email after a successfull password update
+	 * @param boolean $flag Send email after a password update
+	 * @return \DxUser\Options\ModuleOptions
+	 */
+	public function setSendEmailAfterPasswordUpdate($flag)
+	{
+		$this->sendEmailAfterPasswordUpdate = $flag;
+		return $this;
+	}
+	
+	public function getSendEmailAfterPasswordUpdate()
+	{
+		return $this->sendEmailAfterPasswordUpdate;
+	}
+	
+	
 	/**
 	 * Set The template of an email to use after a successfull password update
 	 * @param string $template The template

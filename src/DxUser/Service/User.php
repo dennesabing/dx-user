@@ -236,25 +236,57 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 		if ($this->getAuthService()->hasIdentity())
 		{
 			$newPass = $data['newCredential'];
-			$oldPass = $data['credential'];
 			$currentUser = $this->getAuthService()->getIdentity();
 			$bcrypt = new Bcrypt;
 			$bcrypt->setCost($this->getZfcUserOptions()->getPasswordCost());
-
-			if (!$bcrypt->verify($oldPass, $currentUser->getPassword()))
-			{
-				return FALSE;
-			}
-
 			$pass = $bcrypt->create($newPass);
 			$currentUser->setPassword($pass);
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $currentUser));
 			$this->getUserMapper()->update($currentUser);
+			if ($this->getOptions('dxuser')->getSendEmailAfterPasswordUpdate())
+			{
+				$message = new Message();
+				$message->addFrom($this->getOptions()->getEmailNoReplySender(), $this->getOptions()->getEmailNoReplySender())
+						->addTo($currentUser->getEmail())
+						->setSubject($this->getOptions()->getEmailPasswordChangedSubject());
+				$viewModel = new ViewModel(array(
+							'newCredential' => $newPass,
+							'user' => $currentUser,
+							'hasIdentity' => TRUE
+						));
+				$viewModel->setTemplate($this->getOptions()->getTemplateChangedPasswordEmail());
+				$body = $this->renderer->render($viewModel);
+				$message->setBody($body);
+				$transport = new SendmailTransport($this->getServiceManager());
+				$transport->send($message);
+			}
 			$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $currentUser));
 		}
 		else
 		{
 			return $this->changeResetPassword($data);
+		}
+		return TRUE;
+	}
+
+	/**
+	 * Check if the given password match that is in the db
+	 * @param string $password The password to check
+	 * @param object $user The user entity
+	 * @return boolean
+	 */
+	public function checkPassword($password, $user = NULL)
+	{
+		if (NULL === $user)
+		{
+			$user = $this->getAuthService()->getIdentity();
+		}
+		$bcrypt = new Bcrypt;
+		$bcrypt->setCost($this->getZfcUserOptions()->getPasswordCost());
+
+		if (!$bcrypt->verify($password, $user->getPassword()))
+		{
+			return FALSE;
 		}
 		return TRUE;
 	}

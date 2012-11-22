@@ -1,7 +1,9 @@
 <?php
 
 $html = '';
+$html .= $this->partial('dx-user/email/emailHeader');
 
 $html .= 'Verify Email';
 
+$html .= $this->partial('dx-user/email/emailFooter');
 echo $html;

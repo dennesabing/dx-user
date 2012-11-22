@@ -1,0 +1,25 @@
+<?php
+$avatar = '';
+//$avatar .= '<h3>Hello, ' . $this->zfcUserDisplayName() . '!</h3>';
+$avatar .= '<a id="gravatar" target="_blank" href="http://gravatar.com" title="Change your avatar at Gravatar.com">' . $this->gravatar($this->zfcUserIdentity()->getEmail())->setImgSize(150) . '</a>';
+//$avatar .= '<br />Change your avatar<br />at gravatar.com';
+
+$navs = array(
+	'accountProfile' => array(
+		'anchor' => 'Your profile',
+		'url' => $this->url('dx-user-account/profile'),
+	),
+	'accountEmail' => array(
+		'anchor' => 'Account Email',
+		'url' => $this->url('dx-user-account/email'),
+	),
+	'accountPassword' => array(
+		'anchor' => 'Update Password',
+		'url' => $this->url('dx-user-account/password'),
+	),
+);
+$options = array();
+$avatar .= '<br /><br />';
+$avatar .= $this->dxHtml()->nav($navs, $options);
+
+$this->dxSidebar()->appendToLeft('avatar', $avatar);
