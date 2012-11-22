@@ -2,9 +2,9 @@
 
 namespace DxUser\Controller;
 
-use ZfcUser\Controller\UserController as ZfcUserController;
+use DxUser\Controller\ZfcUser;
 
-class AccountController extends ZfcUserController
+class AccountController extends ZfcUser
 {
 
 	protected $modulePrefix = 'dxuser';
@@ -20,15 +20,10 @@ class AccountController extends ZfcUserController
 
 	public function accountAction()
 	{
+		$this->layout('layout/2column-leftbar');
 		if ($this->zfcUserAuthentication()->hasIdentity())
 		{
 			
 		}
 	}
-	
-	protected function getModuleOptions()
-	{
-		return $this->dxController()->getModuleOptions($this->modulePrefix);
-	}
-
 }

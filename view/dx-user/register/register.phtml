@@ -4,10 +4,56 @@ $html = '';
 $this->dxBreadcrumb()->add('memberRegistration', array('anchor' => 'Member Registration'));
 if ($this->enableRegistration)
 {
-	$this->dxHtml()->setTitle('Member Registration');
-	$form = $this->form;
-	$form->prepare();
-	$html .= $this->formTwb($form, $this->dxConfig()->getOptions()->getFormTypeLayout(), $this->formDisplayOptions);
+	if (isset($this->registrationSuccess))
+	{
+		$verifyString = '';
+		if ($this->dxConfig()->getOptions('dxuser')->getEnableEmailVerification())
+		{
+			if ($this->dxConfig()->getOptions()->inDevelopment())
+			{
+				$verifyUrl = $this->dxHtml()->url('dx-user-register/verify', array('email' => urlencode($this->userCode->getUser()->getEmail()), 'code' => $this->userCode->getCode()), array('useSecureUrl' => TRUE, 'useAbsoluteUrl' => TRUE));
+				$verifyString .= '<a id="urlRegisterVerify" href="' . $verifyUrl . '" title="Verify Now">' . $verifyUrl . '</a><br /><br />';
+			}
+			$html .= '<div class="alert alert-block alert-success">
+				<button type="button" class="close" data-dismiss="alert">×</button>
+				<h4>Email verification sent!</h4>
+				<br />
+				We sent an email containing instruction on how to verify your email address.
+				<br />
+				Kindly check your bulk or spam box for emails from us.
+				<br />
+				<br />
+				' . $verifyString . '
+				Thank you very much.
+			</div>';
+		}
+		else
+		{
+			$html .= '<div class="alert alert-block alert-success">
+				<button type="button" class="close" data-dismiss="alert">×</button>
+				<h4>Registration Successfull!</h4>
+				<br />
+				<br />
+				Thank you very much.
+			</div>';
+		}
+
+		$urlContinue = $this->url($this->dxConfig()->getOptions()->getRouteMain());
+		if ($this->redirect)
+		{
+			$urlContinue = $this->redirect;
+		}
+		$html .= '<a href="' . $urlContinue . '" 
+					class="btn btn-large btn-primary">
+					<i class="icon-white icon-arrow-right"></i> Click here to continue...</a>';
+	}
+	else
+	{
+		$this->dxHtml()->setTitle('Member Registration');
+		$form = $this->form;
+		$form->prepare();
+		$html .= $this->formTwb($form, $this->dxConfig()->getOptions()->getFormTypeLayout(), $this->formDisplayOptions);
+	}
 }
 else
 {

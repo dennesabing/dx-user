@@ -3,9 +3,9 @@
 namespace DxUser\Controller;
 
 use Zend\View\Model\ViewModel;
-use ZfcUser\Controller\UserController as ZfcUserController;
+use DxUser\Controller\ZfcUser;
 
-class PasswordController extends ZfcUserController
+class PasswordController extends ZfcUser
 {
 
 	protected $modulePrefix = 'dxuser';
@@ -104,11 +104,6 @@ class PasswordController extends ZfcUserController
 		return $this->dxController()->notFound();
 	}
 
-	public function getUserService()
-	{
-		return $this->getServiceLocator()->get('dxuser_service_user');
-	}
-
 	public function getPasswordResetForm()
 	{
 		return $this->getServiceLocator()->get('dxuser_form_password_reset');
@@ -118,10 +113,4 @@ class PasswordController extends ZfcUserController
 	{
 		return $this->getServiceLocator()->get('dxuser_form_password_reset_change');
 	}
-
-	protected function getModuleOptions()
-	{
-		return $this->dxController()->getModuleOptions($this->modulePrefix);
-	}
-
 }

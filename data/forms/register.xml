@@ -10,7 +10,7 @@
 				<name>fsMain</name>
 				<type>Zend\Form\Fieldset</type>
 				<options>
-					<legend>sdfsf</legend>
+					<legend></legend>
 				</options>
 			</fsMain>
 		</fieldsets>

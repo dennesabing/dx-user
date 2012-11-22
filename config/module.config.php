@@ -61,6 +61,18 @@ $config = array(
 						'action' => 'index',
 					),
 				),
+				'may_terminate' => true,
+				'child_routes' => array(
+					'verify' => array(
+						'type' => 'Segment',
+						'options' => array(
+							'route' => '/:email/:code',
+							'defaults' => array(
+								'action' => 'verify',
+							),
+						),
+					),
+				),
 			),
 			'dx-user-account' => array(
 				'type' => 'Literal',
@@ -95,6 +107,17 @@ $config = array(
 					),
 				),
 			),
+			'dx-user-logout' => array(
+				'type' => 'Literal',
+				'priority' => 10000,
+				'options' => array(
+					'route' => '/logout',
+					'defaults' => array(
+						'controller' => 'zfcuser',
+						'action' => 'logout',
+					),
+				),
+			),
 			'zfcuser-login' => array(
 				'type' => 'Literal',
 				'priority' => 10000,
@@ -124,7 +147,7 @@ $config = array(
 							'route' => '/:email/:code',
 							'defaults' => array(
 								'action' => 'verify',
-							),	
+							),
 						),
 					),
 				),

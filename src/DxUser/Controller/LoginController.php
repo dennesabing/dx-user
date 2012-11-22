@@ -4,9 +4,9 @@ namespace DxUser\Controller;
 
 use Zend\View\Model\ViewModel;
 use Zend\Stdlib\Parameters;
-use ZfcUser\Controller\UserController as ZfcUserController;
+use DxUser\Controller\ZfcUser;
 
-class LoginController extends ZfcUserController
+class LoginController extends ZfcUser
 {
 
 	protected $modulePrefix = 'dxuser';
@@ -80,36 +80,8 @@ class LoginController extends ZfcUserController
 		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
 	}
 
-	protected function authenticate($request)
-	{
-		$adapter = $this->zfcUserAuthentication()->getAuthAdapter();
-		$result = $adapter->prepareForAuthentication($request);
-		if ($result instanceof Response)
-		{
-			return FALSE;
-		}
-		$auth = $this->zfcUserAuthentication()->getAuthService()->authenticate($adapter);
-		if (!$auth->isValid())
-		{
-			$adapter->resetAdapters();
-			return FALSE;
-		}
-		return TRUE;
-	}
-
-	public function getUserService()
-	{
-		return $this->getServiceLocator()->get('dxuser_service_user');
-	}
-
 	public function getLoginForm()
 	{
 		return $this->getServiceLocator()->get('dxuser_form_login');
 	}
-
-	protected function getModuleOptions()
-	{
-		return $this->dxController()->getModuleOptions($this->modulePrefix);
-	}
-
 }

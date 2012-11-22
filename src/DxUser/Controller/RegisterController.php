@@ -2,11 +2,11 @@
 
 namespace DxUser\Controller;
 
-use ZfcUser\Controller\UserController as ZfcUserController;
+use DxUser\Controller\ZfcUser;
 use Zend\View\Model\ViewModel;
 use Zend\Stdlib\Parameters;
 
-class RegisterController extends ZfcUserController
+class RegisterController extends ZfcUser
 {
 
 	protected $modulePrefix = 'dxuser';
@@ -26,7 +26,8 @@ class RegisterController extends ZfcUserController
 		if (!$this->zfcUserAuthentication()->hasIdentity())
 		{
 			$viewData = array();
-			$viewData['enableRegistration'] = $this->getOptions()->getEnableRegistration();
+			$viewData['redirect'] = $this->getRedirectUrl();
+			$viewData['enableRegistration'] = $this->getZfcUserOptions()->getEnableRegistration();
 			$form = $this->getRegisterForm();
 			if ($this->request->isPost())
 			{
@@ -37,9 +38,14 @@ class RegisterController extends ZfcUserController
 					$user = $this->getUserService()->register($data);
 					if ($user)
 					{
-						if ($this->getUserService()->getZfcUserOptions()->getLoginAfterRegistration())
+						if($this->dxController()->getModuleOptions('dxuser')->getEnableEmailVerification())
 						{
-							$identityFields = $this->getUserService()->getZfcUserOptions()->getAuthIdentityFields();
+							$viewData['userCode'] = $user;
+							$user = $user->getUser();
+						}
+						if ($this->getZfcUserOptions()->getLoginAfterRegistration())
+						{
+							$identityFields = $this->getZfcUserOptions()->getAuthIdentityFields();
 							if (in_array('email', $identityFields))
 							{
 								$post['identity'] = $user->getEmail();
@@ -50,10 +56,14 @@ class RegisterController extends ZfcUserController
 							}
 							$post['credential'] = $data['fsMain']['newPassword'];
 							$this->getRequest()->setPost(new Parameters($post));
-							return $this->forward()->dispatch('AuthController', array('action' => 'index'));
+							$auth = $this->authenticate($this->getRequest());
+							if ($auth)
+							{
+								$viewData['loginSuccess'] = TRUE;
+							}
 						}
+						$viewData['registrationSuccess'] = TRUE;
 					}
-					 return $this->redirect()->toUrl($this->url()->fromRoute('zfcuser/login') . ($redirect ? '?redirect='.$redirect : ''));
 				}
 			}
 			$viewData['form'] = $form;
@@ -62,20 +72,14 @@ class RegisterController extends ZfcUserController
 		}
 		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
 	}
-
-	public function getUserService()
-	{
-		return $this->getServiceLocator()->get('dxuser_service_user');
-	}
-
+	
+	/**
+	 * Return the Registration Form
+	 * @return type
+	 */
 	public function getRegisterForm()
 	{
 		return $this->getServiceLocator()->get('dxuser_form_register');
-	}
-
-	protected function getModuleOptions()
-	{
-		return $this->dxController()->getModuleOptions($this->modulePrefix);
 	}
 
 }

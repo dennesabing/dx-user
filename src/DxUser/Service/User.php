@@ -84,11 +84,10 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 				$userCode->setUser($user);
 				$userCode->setTypeOf($typeOf);
 				$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
-				$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
 				$this->em->persist($userCode);
 				$this->em->flush();
 				$this->sendVerifyEmail($userCode);
-				$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'userCode' => $userCode));
+				return $userCode;
 			}
 			$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user));
 			return $user;
@@ -317,16 +316,16 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 		$transport->send($message);
 	}
 
-    /**
-     * getUserMapper
-     *
-     * @return UserMapperInterface
-     */
-    public function getUserMapper()
-    {
+	/**
+	 * getUserMapper
+	 *
+	 * @return UserMapperInterface
+	 */
+	public function getUserMapper()
+	{
 		return $this->getServiceManager()->get('zfcuser_user_mapper');
-    }
-	
+	}
+
 	/**
 	 * getAuthService
 	 *

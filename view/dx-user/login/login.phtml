@@ -12,12 +12,10 @@ $this->dxHtml()->setTitle('Member Login');
 $form = $this->form;
 $form->prepare();
 $html .= $this->formTwb($form, $this->dxConfig()->getOptions()->getFormTypeLayout(), $this->formDisplayOptions);
+$html .= '<a href="' . $this->url($routePasswordReset) . ($this->redirect ? '?redirect=' . $this->redirect : '') . '">Forgot Password?</a>';
 if ($this->enableRegistration) :
-	$html .= 'Not registered? <a href="' . $this->url($routeRegister) . ($this->redirect ? '?redirect=' . $this->redirect : '') . '">Sign up!</a>';
+	$html .= ' | Not registered? <a href="' . $this->url($routeRegister) . ($this->redirect ? '?redirect=' . $this->redirect : '') . '">Sign up!</a>';
 endif;
-
-$html .= '<br /><a href="' . $this->url($routePasswordReset) . ($this->redirect ? '?redirect=' . $this->redirect : '') . '">Forgot Password?</a>';
-
 $socialButtons = '';
 foreach ($this->scnSocialAuthOptions->getEnabledProviders() as $provider) {
     $socialButtons .= $this->dxHtml()->socialSignInButton($provider);
