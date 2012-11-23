@@ -12,7 +12,8 @@ before_install:
  - cp composer.json ./test
  - cd test
  - curl -s http://getcomposer.org/installer | php
- - php composer.phar install --dev
+ - php composer.phar install
+ - mysql -e 'create database dxuser_test;
 
 script:
  - phpunit
