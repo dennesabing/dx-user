@@ -1,0 +1,43 @@
+<?php
+
+$html = '';
+if ($this->hasIdentity)
+{
+	$this->dxHtml()->setTitle('Account Email Address');
+	$this->dxBreadcrumb()->add('memberAccount', array('anchor' => 'Account'));
+	$this->dxBreadcrumb()->add('memberAccountEmail', array('anchor' => 'Email Address'));
+	$this->partial('dx-user/account/nav');
+}
+else
+{
+	$this->dxBreadcrumb()->add('memberRegistration', array('anchor' => 'Email Verification'));
+}
+if (isset($this->success) && $this->success)
+{
+	$html .= '<div class="alert alert-block alert-success">
+				<button type="button" class="close" data-dismiss="alert">×</button>
+				<h4>Email address verified!</h4>
+				<br />
+				Your email address is now verified. Enjoy the our website!
+				<br />
+				Thank you very much.
+			</div>';
+
+	$urlContinue = $this->url($this->dxConfig()->getOptions()->getRouteMain());
+	$html .= '<a href="' . $urlContinue . '" 
+					class="btn btn-large btn-primary">
+					<i class="icon-white icon-arrow-right"></i> Click here to continue...</a>';
+}
+else
+{
+	$html .= '<div class="alert alert-block alert-error">
+				<button type="button" class="close" data-dismiss="alert">×</button>
+				<h4>Email address and Code don\'t match!</h4>
+				<br />
+				There was an error processing your request. Please try again.
+				<br />
+				Thank you very much.
+			</div>';
+}
+
+echo $html;

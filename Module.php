@@ -1,13 +1,8 @@
 <?php
 
-// module/Album/Module.php
-
 namespace DxUser;
 
-use Zend\Mvc\ModuleRouteListener;
-use Zend\Module\Manager,
-	Zend\EventManager\StaticEventManager,
-	Zend\EventManager\EventInterface as Event;
+use Zend\EventManager\EventInterface as Event;
 
 class Module
 {
@@ -100,6 +95,13 @@ class Module
 					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('accountPasswordReset.xml', $options, $sm));
 					return $form;
 				},
+				'dxuser_form_account_email' => function($sm)
+				{
+					$options = $sm->get('dxuser_module_options');
+					$form = new \Dxapp\Form\Form('accountEmail','accountEmail.xml', $options, $sm);
+					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('accountEmail.xml', $options, $sm));
+					return $form;
+				}
 			)
 		);
 	}

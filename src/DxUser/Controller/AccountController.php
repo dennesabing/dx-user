@@ -28,6 +28,10 @@ class AccountController extends ZfcUser
 		}
 	}
 
+	/**
+	 * Update account password
+	 * @return \Zend\View\Model\ViewModel
+	 */
 	public function passwordAction()
 	{
 		if ($this->zfcUserAuthentication()->hasIdentity())
@@ -43,11 +47,11 @@ class AccountController extends ZfcUser
 				{
 					$data = $form->getData();
 					$oldPassword = $data['fsMain']['oldPassword'];
-					if($this->getUserService()->checkPassword($oldPassword))
+					if ($this->getUserService()->checkPassword($oldPassword))
 					{
 						$data['newCredential'] = $data['fsReset']['newPassword'];
 						$changed = $this->getUserService()->changePassword($data);
-						if($changed)
+						if ($changed)
 						{
 							$viewData['success'] = TRUE;
 						}
@@ -64,28 +68,118 @@ class AccountController extends ZfcUser
 		}
 		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
 	}
-	
+
+	/**
+	 * Update account email address
+	 * @return \Zend\View\Model\ViewModel
+	 */
+	public function emailAction()
+	{
+		if ($this->zfcUserAuthentication()->hasIdentity())
+		{
+			$this->layout('layout/2column-leftbar');
+			$viewData = array();
+			$viewData['enableEmailVerification'] = $this->getModuleOptions('dxuser')->getEnableEmailVerification();
+			$userIdentity = $this->getUserService()->getCurrentUser();
+			$viewData['emailAddress'] = $userIdentity->getEmail();
+			if (!$userIdentity->isEmailVerified())
+			{
+				$viewData['emailVerified'] = FALSE;
+			}
+			$viewData['currentEmail'] = $userIdentity->getEmail();
+			$form = $this->getEmailChangeForm();
+			if ($this->getRequest()->isPost())
+			{
+				$form->setData($this->getRequest()->getPost());
+				if ($form->isValid())
+				{
+					$data = $form->getData();
+					$oldPassword = $data['fsMain']['password'];
+					if ($this->getUserService()->checkPassword($oldPassword))
+					{
+						$data['email'] = $data['fsReset']['email'];
+						$userCode = $this->getUserService()->changeEmail($data);
+						if ($userCode)
+						{
+							$viewData['success'] = TRUE;
+							$viewData['userCode'] = $userCode;
+						}
+					}
+					else
+					{
+						$viewData['passwordError'] = TRUE;
+					}
+				}
+			}
+			$viewData['form'] = $form;
+			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
+			return new ViewModel($viewData);
+		}
+		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
+	}
+
+	/**
+	 * Resend user's email verification
+	 * @return \Zend\View\Model\ViewModel
+	 */
+	public function emailresendAction()
+	{
+		if ($this->zfcUserAuthentication()->hasIdentity() && $this->getModuleOptions('dxuser')->getEnableEmailVerification())
+		{
+			$this->layout('layout/2column-leftbar');
+			$viewData = array();
+			$userIdentity = $this->getUserService()->getCurrentUser();
+			$viewData['emailAddress'] = $userIdentity->getEmail();
+			if ($userIdentity->isEmailVerified())
+			{
+				$viewData['emailVerified'] = TRUE;
+			}
+			else
+			{
+				$userCode = $this->getUserService()->resendEmailVerification();
+				if ($userCode)
+				{
+					$viewData['success'] = TRUE;
+					$viewData['userCode'] = $userCode;
+					$this->dxController()->getSession()->offsetSet('accountEmailresend', TRUE);
+					$this->dxController()->getSession()->setExpirationSeconds(300, 'accountEmailResend');
+				}
+			}
+			return new ViewModel($viewData);
+		}
+		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
+	}
+
+	/**
+	 * The Profile update
+	 * @return \Zend\View\Model\ViewModel
+	 */
+	public function profileAction()
+	{
+		if ($this->zfcUserAuthentication()->hasIdentity())
+		{
+			$viewData = array();
+			return new ViewModel($viewData);
+		}
+		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
+	}
+
+	/**
+	 * Get the Password change form
+	 * @return \Zend\Form\Form
+	 */
 	public function getPasswordChangeForm()
 	{
 		return $this->getServiceLocator()->get('dxuser_form_account_password');
 	}
 
-	public function emailAction()
+	/**
+	 * Get the Email change form
+	 * @return \Zend\Form\Form
+	 */
+	public function getEmailChangeForm()
 	{
-		if ($this->zfcUserAuthentication()->hasIdentity())
-		{
-			
-		}
+		return $this->getServiceLocator()->get('dxuser_form_account_email');
 	}
-
-	public function profileAction()
-	{
-		if ($this->zfcUserAuthentication()->hasIdentity())
-		{
-			
-		}
-	}
-	
-	
 
 }

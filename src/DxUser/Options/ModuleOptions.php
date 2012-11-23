@@ -81,19 +81,25 @@ class ModuleOptions extends AbstractOptions
 	 * @var string
 	 */
 	protected $templateResetPasswordEmail = 'dx-user/email/reset-password';
-	
+
 	/**
 	 * The template of an email to use after a successfull password update
 	 * @var string
 	 */
 	protected $templateChangedPasswordEmail = 'dx-user/email/changed-password';
-	
+
 	/**
 	 * Send email after a succesful password update
 	 * @var boolean
 	 */
 	protected $sendEmailAfterPasswordUpdate = TRUE;
-	
+
+	/**
+	 * Send an email after a succesful email update
+	 * @var boolean
+	 */
+	protected $sendEmailAfterEmailUpdate = TRUE;
+
 	/**
 	 * The Login Route
 	 * @var string
@@ -134,13 +140,36 @@ class ModuleOptions extends AbstractOptions
 		$this->sendEmailAfterPasswordUpdate = $flag;
 		return $this;
 	}
-	
+
+	/**
+	 * Get flag if to send an email after a successfull password update
+	 * @return boolean
+	 */
 	public function getSendEmailAfterPasswordUpdate()
 	{
 		return $this->sendEmailAfterPasswordUpdate;
 	}
-	
-	
+
+	/**
+	 * Send email after a successfull email update
+	 * @param boolean $flag Send email after a password update
+	 * @return \DxUser\Options\ModuleOptions
+	 */
+	public function setSendEmailAfterEmailUpdate($flag)
+	{
+		$this->sendEmailAfterEmailUpdate = $flag;
+		return $this;
+	}
+
+	/**
+	 * Get flag if to send an email after a successfull email update
+	 * @return boolean
+	 */
+	public function getSendEmailAfterEmailUpdate()
+	{
+		return $this->sendEmailAfterEmailUpdate;
+	}
+
 	/**
 	 * Set The template of an email to use after a successfull password update
 	 * @param string $template The template
@@ -151,7 +180,7 @@ class ModuleOptions extends AbstractOptions
 		$this->templateChangedPasswordEmail = $template;
 		return $this;
 	}
-	
+
 	/**
 	 * Get The template of an email to use after a successfull password update
 	 * @return string
@@ -160,7 +189,7 @@ class ModuleOptions extends AbstractOptions
 	{
 		return $this->templateChangedPasswordEmail;
 	}
-	
+
 	/**
 	 * Set the Subject in an email of a successful password changed
 	 * @param string $subject The Subject

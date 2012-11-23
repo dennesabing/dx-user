@@ -11,7 +11,7 @@ if ($this->enableRegistration)
 		{
 			if ($this->dxConfig()->getOptions()->inDevelopment())
 			{
-				$verifyUrl = $this->dxHtml()->url('dx-user-register/verify', array('email' => urlencode($this->userCode->getUser()->getEmail()), 'code' => $this->userCode->getCode()), array('useSecureUrl' => TRUE, 'useAbsoluteUrl' => TRUE));
+				$verifyUrl = $this->dxHtml()->url('dx-user-email-verify', array('email' => urlencode($this->userCode->getUser()->getEmail()), 'code' => $this->userCode->getCode()), array('useSecureUrl' => TRUE, 'useAbsoluteUrl' => TRUE));
 				$verifyString .= '<a id="urlRegisterVerify" href="' . $verifyUrl . '" title="Verify Now">' . $verifyUrl . '</a><br /><br />';
 			}
 			$html .= '<div class="alert alert-block alert-success">

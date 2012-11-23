@@ -163,7 +163,37 @@ class UserCodes implements UserCodesInterface
 		$this->extraInfos[$key] = $val;
 		return $this;
 	}
+	
+	/**
+	 * Get the value of an extra data
+	 * @param string $key
+	 * 
+	 * @return mixed
+	 */
+	public function getExtra($key, $default = NULL)
+	{
+		$extra = $this->getExtranInfos();
+		if(isset($extra[$key]))
+		{
+			return $extra[$key];
+		}
+		return $default;
+	}
 
+	/**
+	 * Return the xtra infos
+	 * @return array
+	 */
+	public function getExtranInfos()
+	{
+		$extra = $this->extraInfo;
+		if(!is_array($extra))
+		{
+			$extra = array_merge(unserialize($this->extraInfo), $this->extraInfos);
+		}
+		return $extra;
+	}
+	
 	/**
 	 * Remove an extra info
 	 * @param string $key

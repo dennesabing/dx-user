@@ -38,7 +38,7 @@ class RegisterController extends ZfcUser
 					$user = $this->getUserService()->register($data);
 					if ($user)
 					{
-						if($this->dxController()->getModuleOptions('dxuser')->getEnableEmailVerification())
+						if ($this->dxController()->getModuleOptions('dxuser')->getEnableEmailVerification())
 						{
 							$viewData['userCode'] = $user;
 							$user = $user->getUser();
@@ -72,7 +72,48 @@ class RegisterController extends ZfcUser
 		}
 		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
 	}
-	
+
+	/**
+	 * Verify a given email address
+	 * @return type
+	 */
+	public function verifyAction()
+	{
+		$this->layout('layout/2column-leftbar');
+		if ($this->getModuleOptions('dxuser')->getEnableEmailVerification())
+		{
+			$viewData = array();
+			$viewData['enableRegistration'] = $this->getZfcUserOptions()->getEnableRegistration();
+			$email = urldecode($this->getEvent()->getRouteMatch()->getParam('email'));
+			$code = $this->getEvent()->getRouteMatch()->getParam('code');
+			$user = $this->getUserService()->getUserByEmail($email);
+			if ($user)
+			{
+				if ($this->dxController()->getAuth()->hasIdentity())
+				{
+					$viewData['hasIdentity'] = TRUE;
+					$user = $this->getUserService()->getUserById($this->dxController()->getAuth()->getIdentity()->getId());
+					if (!$email == $user->getEmail())
+					{
+						return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
+					}
+				}
+				if ($user->isEmailVerified())
+				{
+					$viewData['alreadyVerified'] = TRUE;
+				}
+				$data = array(
+					'code' => $code,
+					'email' => $email,
+					'user' => $user
+				);
+				$viewData['success'] = $this->getUserService()->verifyEmail($data);
+				return new ViewModel($viewData);
+			}
+		}
+		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
+	}
+
 	/**
 	 * Return the Registration Form
 	 * @return type

@@ -1,0 +1,31 @@
+<?php
+
+$html = '';
+$this->dxBreadcrumb()->add('memberAccount', array('anchor' => 'Account'));
+$this->dxBreadcrumb()->add('memberAccountEmail', array('anchor' => 'Email Address'));
+$this->partial('dx-user/account/nav');
+
+$this->dxHtml()->setTitle('Account Email Address');
+
+if ($this->success)
+{
+//	$this->dxAlert()->addSuccess('<strong>Successfull</strong><br />Email address updated.');
+	if ($this->dxConfig()->getOptions()->inDevelopment())
+	{
+		$verifyUrl = $this->dxHtml()->url('dx-user-email-verify', array('email' => urlencode($this->userCode->getUser()->getEmail()), 'code' => $this->userCode->getCode()), array('useSecureUrl' => TRUE, 'useAbsoluteUrl' => TRUE));
+		$verifyString .= '<a id="urlRegisterVerify" href="' . $verifyUrl . '" title="Verify Now">' . $verifyUrl . '</a><br /><br />';
+	}
+	$html .= '<div class="alert alert-block alert-success">
+				<button type="button" class="close" data-dismiss="alert">×</button>
+				<h4>Email verification re-sent!</h4>
+				<br />
+				We sent an email containing instruction on how to verify your new email address.
+				<br />
+				Kindly check your bulk or spam box for emails from us.
+				<br />
+				<br />
+				' . $verifyString . '
+				Thank you very much.
+			</div>';
+}
+echo $html;

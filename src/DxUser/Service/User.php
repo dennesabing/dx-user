@@ -44,6 +44,142 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	protected $authService = NULL;
 
 	/**
+	 * Change an email address
+	 * @param array $data
+	 * @param type $user
+	 * @return boolean
+	 */
+	public function changeEmail(array $data, $user)
+	{
+		$success = FALSE;
+		if (NULL === $user)
+		{
+			$email = $data['email'];
+			$user = $this->getAuthService()->getIdentity();
+			$user->setEmail($email);
+			$user->unVerifyEmailAddress(FALSE);
+			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
+			$this->getUserMapper()->update($user);
+			if ($this->getOptions('dxuser')->getEnableEmailVerification())
+			{
+				$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+				$typeOf = 'verify-email';
+				$userCodesRepo->removeCode($user, $typeOf);
+				$userCodeClass = $this->getOptions()->getEntityUserCode();
+				$userCode = new $userCodeClass;
+				$userCode->addExtra('email', $email);
+				$userCode->setUser($user);
+				$userCode->setTypeOf($typeOf);
+				$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
+				$this->em->persist($userCode);
+				$this->em->flush();
+				$this->sendVerifyEmail($userCode);
+				$success = TRUE;
+			}
+			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
+			if (!$success)
+			{
+				return FALSE;
+			}
+		}
+		if (isset($userCode))
+		{
+			return $userCode;
+		}
+		return TRUE;
+	}
+
+	/**
+	 * Resend the email verification code
+	 * @return boolean
+	 */
+	public function resendEmailVerification()
+	{
+		$user = $this->getAuthService()->getIdentity();
+		$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
+		$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+		$typeOf = 'verify-email';
+		$formerCode = $userCodesRepo->findUserCode($user, $typeOf, FALSE);
+		$userCodesRepo->removeCode($user, $typeOf);
+		$userCodeClass = $this->getOptions()->getEntityUserCode();
+		$userCode = new $userCodeClass;
+		if($formerCode)
+		{
+			$oldEmail = $formerCode->getExtra('email');
+			$userCode->addExtra('email', $oldEmail);
+		}
+		$userCode->setUser($user);
+		$userCode->setTypeOf($typeOf);
+		$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
+		$this->em->persist($userCode);
+		$this->em->flush();
+		$this->sendVerifyEmail($userCode);
+		$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
+		return $userCode;
+	}
+
+	/**
+	 * REturn the Current User
+	 * @return boolean|\DxUser\Entity\Users
+	 */
+	public function getCurrentUser()
+	{
+		if ($this->getAuthService()->hasIdentity())
+		{
+			return $this->getUserById($this->getAuthService()->getIdentity()->getId());
+		}
+		return FALSE;
+	}
+
+	/**
+	 * Get user by Id
+	 * @param integer $userId
+	 * @return boolean|\DxUser\Entity\Users
+	 */
+	public function getUserById($userId)
+	{
+		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		$user = $userRepo->findById($userId);
+		if (is_array($user) && isset($user[0]))
+		{
+			return $user[0];
+		}
+		return FALSE;
+	}
+
+	/**
+	 * Get a user by Email Address
+	 * @param string $email
+	 * @return boolean|\DxUser\Entity\Users
+	 */
+	public function getUserByEmail($email)
+	{
+		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		$user = $userRepo->findByEmail($email);
+		if (is_array($user) && isset($user[0]))
+		{
+			return $user[0];
+		}
+		return FALSE;
+	}
+
+	/**
+	 * Get a user by Username
+	 * @param string $username
+	 * @return boolean|\DxUser\Entity\Users
+	 */
+	public function getUserByUsername($username)
+	{
+		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		$user = $userRepo->findByUsername($username);
+		if (is_array($user) && isset($user[0]))
+		{
+			return $user[0];
+		}
+		return FALSE;
+	}
+
+	/**
 	 * Two Stage SignUp
 	 *
 	 * @param array $data The User Object
@@ -126,27 +262,24 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	{
 		if (isset($data['user']) && isset($data['code']))
 		{
-			$user = $data['user'];
+			$user = isset($data['user']) ? $data['user'] : NULL;
+			if (isset($data['email']) && NULL === $user)
+			{
+				$user = $this->getUserByEmail($data['email']);
+			}
 			$code = $data['code'];
 			$typeOf = 'verify-email';
-			if (!$user->isEmailVerified())
+			$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+			$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
+			if ($userCode)
 			{
-				$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
-				$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
-				if ($userCode)
-				{
-					$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
-					$user->verifyEmailAddress();
-					$this->em->persist($user);
-					$this->em->remove($userCode);
-					$this->em->flush();
-					$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'userCode' => $userCode));
-					return TRUE;
-				}
-			}
-			else
-			{
-				return 'already-verified';
+				$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
+				$user->verifyEmailAddress();
+				$this->em->persist($user);
+				$this->em->remove($userCode);
+				$this->em->flush();
+				$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'userCode' => $userCode));
+				return TRUE;
 			}
 		}
 		return FALSE;

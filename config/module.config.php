@@ -40,6 +40,17 @@ $config = array(
 					),
 				),
 			),
+			'dx-user-email-verify' => array(
+				'type' => 'Segment',
+				'priority' => 10000,
+				'options' => array(
+					'route' => '/verify/email/:email/:code',
+					'defaults' => array(
+						'controller' => 'DxUser\Controller\Register',
+						'action' => 'verify',
+					),
+				),
+			),
 			'dx-user-register' => array(
 				'type' => 'Literal',
 				'priority' => 10000,
@@ -101,6 +112,15 @@ $config = array(
 							'route' => '/email',
 							'defaults' => array(
 								'action' => 'email',
+							),
+						),
+					),
+					'resend-email-verification' => array(
+						'type' => 'Segment',
+						'options' => array(
+							'route' => '/email/resend-verification',
+							'defaults' => array(
+								'action' => 'emailresend',
 							),
 						),
 					),
