@@ -36,7 +36,6 @@
 		"dlu/dlutwbootstrap": "dev-master",
 		"socalnick/scn-social-auth": "dev-master",
 		"socalnick/scn-social-auth-doctrine-orm": "dev-master",
-		"dennesabing/dx" : "dev-master",
 		"dennesabing/dxapp" : "dev-master"
 	},
 	"autoload": {

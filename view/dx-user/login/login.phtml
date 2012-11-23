@@ -17,9 +17,9 @@ if ($this->enableRegistration) :
 	$html .= ' | Not registered? <a href="' . $this->url($routeRegister) . ($this->redirect ? '?redirect=' . $this->redirect : '') . '">Sign up!</a>';
 endif;
 $socialButtons = '';
-foreach ($this->scnSocialAuthOptions->getEnabledProviders() as $provider) {
-    $socialButtons .= $this->dxHtml()->socialSignInButton($provider);
-}
+//foreach ($this->scnSocialAuthOptions->getEnabledProviders() as $provider) {
+//    $socialButtons .= $this->dxHtml()->socialSignInButton($provider);
+//}
 if(!empty($socialButtons))
 {
 	$socialButtons .= '<h2>Social Login</h2>';
