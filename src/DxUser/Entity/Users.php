@@ -44,6 +44,12 @@ class Users extends ZfcUserEntity
 	 * @ORM\Column(name="updated", type="datetime", nullable=true)
 	 */
 	private $updated;
+	
+	/**
+     * @ORM\OneToOne(targetEntity="DxUser\Entity\UserProfile")
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="user_id")
+	 */
+	private $profile;
 
 	public function __construct()
 	{
@@ -80,5 +86,50 @@ class Users extends ZfcUserEntity
 	public function isEmailVerified()
 	{
 		return $this->isVerified;
+	}
+	
+	/**
+	 * Return the User Profile
+	 * @return type
+	 */
+	public function getProfile()
+	{
+		return $this->profile;
+	}
+	
+	/**
+	 * Set the PRofile Object
+	 * @param object $profile \DxUser\Entity\UserProfile
+	 * @return \DxUser\Entity\Users
+	 */
+	public function setProfile($profile)
+	{
+		$this->profile = $profile;
+		return $this;
+	}
+	
+
+	/**
+	 * Set values by using an array derived from a form
+	 * @param array $arr
+	 * @return \DxUser\Entity\UserProfile
+	 */
+	public function setDataArray(array $arr)
+	{
+		foreach ($arr as $k => $v)
+		{
+			if (is_array($v))
+			{
+				$this->setDataArray($v);
+			}
+			else
+			{
+				if (property_exists($this, $k))
+				{
+					$this->$k = $v;
+				}
+			}
+		}
+		return $this;
 	}
 }

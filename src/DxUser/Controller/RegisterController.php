@@ -8,9 +8,6 @@ use Zend\Stdlib\Parameters;
 
 class RegisterController extends ZfcUser
 {
-
-	protected $modulePrefix = 'dxuser';
-
 	public function indexAction()
 	{
 		if (!$this->zfcUserAuthentication()->hasIdentity())

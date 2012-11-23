@@ -8,9 +8,6 @@ use DxUser\Controller\ZfcUser;
 
 class LoginController extends ZfcUser
 {
-
-	protected $modulePrefix = 'dxuser';
-
 	public function indexAction()
 	{
 		if (!$this->zfcUserAuthentication()->hasIdentity())

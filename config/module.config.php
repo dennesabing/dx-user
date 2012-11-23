@@ -92,7 +92,7 @@ $config = array(
 					'route' => '/account',
 					'defaults' => array(
 						'controller' => 'DxUser\Controller\Account',
-						'action' => 'account',
+						'action' => 'index',
 					),
 				),
 				'may_terminate' => true,

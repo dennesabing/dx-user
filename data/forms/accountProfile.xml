@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<form>
+		<name>FormName</name>
+		<attributes>
+			<method>post</method>
+		</attributes>
+		<fieldset></fieldset>
+		<fieldsets>
+			<fsDisplayName>
+				<type>Zend\Form\Fieldset</type>
+				<options>
+					<legend>Your Display Name</legend>
+				</options>
+			</fsDisplayName>
+			<fsMain>
+				<type>Zend\Form\Fieldset</type>
+				<options>
+					<legend>Personal Information</legend>
+				</options>
+			</fsMain>
+		</fieldsets>
+		<elements>
+			<csrf>
+				<type>Zend\Form\Element\Csrf</type>
+			</csrf>
+			<displayName>
+				<name>displayName</name>
+				<type>Zend\Form\Element\Text</type>
+				<fieldset>fsDisplayName</fieldset>
+				<options>
+					<label></label>
+				</options>
+			</displayName>
+			<firstName>
+				<name>firstName</name>
+				<type>Zend\Form\Element\Text</type>
+				<fieldset>fsMain</fieldset>
+				<options>
+					<label>First Name</label>
+				</options>
+			</firstName>
+			<lastName>
+				<name>lastName</name>
+				<type>Zend\Form\Element\Text</type>
+				<fieldset>fsMain</fieldset>
+				<options>
+					<label>Last Name</label>
+				</options>
+			</lastName>
+			<submitBtn>
+				<type>Zend\Form\Element\Submit</type>
+				<options>
+					<label>Submit</label>
+					<primary>1</primary>
+				</options>
+				<attributes>
+					<value>Submit</value>
+				</attributes>
+			</submitBtn>
+		</elements>
+		<inputFilter>
+			<fieldsets>
+				<fsDisplayName>
+					<displayName>
+						<name>displayName</name>
+						<required>1</required>
+						<validators>
+							<not_empty>
+								<options>
+									<messages>
+										<isEmpty>Required.</isEmpty>
+									</messages>
+								</options>
+							</not_empty>
+						</validators>
+					</displayName>
+				</fsDisplayName>
+			</fieldsets>
+		</inputFilter>
+	</form>
+</config>

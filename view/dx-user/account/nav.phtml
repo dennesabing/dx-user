@@ -5,8 +5,12 @@ $avatar .= '<a id="gravatar" target="_blank" href="http://gravatar.com" title="C
 //$avatar .= '<br />Change your avatar<br />at gravatar.com';
 
 $navs = array(
+	'Account' => array(
+		'anchor' => 'Account Info',
+		'url' => $this->url('dx-user-account'),
+	),
 	'accountProfile' => array(
-		'anchor' => 'Your profile',
+		'anchor' => 'Update profile',
 		'url' => $this->url('dx-user-account/profile'),
 	),
 	'accountEmail' => array(

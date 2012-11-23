@@ -8,24 +8,52 @@ use Zend\View\Model\ViewModel;
 class AccountController extends ZfcUser
 {
 
-	protected $modulePrefix = 'dxuser';
-
 	public function indexAction()
 	{
+		$this->getUserService()->getCurrentUser();
+		$this->layout('layout/2column-leftbar');
 		if ($this->zfcUserAuthentication()->hasIdentity())
 		{
-			return $this->redirect()->toRoute($this->getModuleOptions()->getRouteUserAccount());
+			$viewData = array();
+			$viewData['enableEmailVerification'] = $this->getModuleOptions('dxuser')->getEnableEmailVerification();
+			$viewData['user'] = $this->getUserService()->getCurrentUser();
+			return new ViewModel($viewData);
 		}
 		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
 	}
 
-	public function accountAction()
+	/**
+	 * The Profile update
+	 * @return \Zend\View\Model\ViewModel
+	 */
+	public function profileAction()
 	{
 		$this->layout('layout/2column-leftbar');
 		if ($this->zfcUserAuthentication()->hasIdentity())
 		{
-			
+			$viewData = array();
+			$viewData['user'] = $this->getUserService()->getCurrentUser();
+			$form = $this->getProfileChangeForm();
+			$user = $this->getUserService()->getCurrentUser();
+			$userProfile = $this->getUserService()->getProfile($user);
+			$profile = new \ArrayObject;
+			$profile['fsDisplayName']['displayName'] = $user->getDisplayName();
+			$profile['fsMain']['firstName'] = $userProfile->getFirstName();
+			$profile['fsMain']['lastName'] = $userProfile->getLastName();
+			$form->bind($profile);
+			if ($this->getRequest()->isPost())
+			{
+				$form->setData($this->getRequest()->getPost());
+				if ($form->isValid())
+				{
+					$viewData['success'] = $this->getUserService()->updateProfile($form->getData(\Zend\Form\FormInterface::VALUES_AS_ARRAY));
+				}
+			}
+			$viewData['form'] = $form;
+			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
+			return new ViewModel($viewData);
 		}
+		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
 	}
 
 	/**
@@ -151,20 +179,6 @@ class AccountController extends ZfcUser
 	}
 
 	/**
-	 * The Profile update
-	 * @return \Zend\View\Model\ViewModel
-	 */
-	public function profileAction()
-	{
-		if ($this->zfcUserAuthentication()->hasIdentity())
-		{
-			$viewData = array();
-			return new ViewModel($viewData);
-		}
-		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
-	}
-
-	/**
 	 * Get the Password change form
 	 * @return \Zend\Form\Form
 	 */
@@ -180,6 +194,15 @@ class AccountController extends ZfcUser
 	public function getEmailChangeForm()
 	{
 		return $this->getServiceLocator()->get('dxuser_form_account_email');
+	}
+
+	/**
+	 * Get the Email change form
+	 * @return \Zend\Form\Form
+	 */
+	public function getProfileChangeForm()
+	{
+		return $this->getServiceLocator()->get('dxuser_form_account_profile');
 	}
 
 }

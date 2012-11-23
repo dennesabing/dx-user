@@ -44,6 +44,27 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	protected $authService = NULL;
 
 	/**
+	 * Update user profile
+	 * @param object $user
+	 * @param array $profile Form Data Object or array
+	 * 
+	 * @return boolean
+	 */
+	public function updateProfile(array $profile, $user = NULL)
+	{
+		if(NULL === $user)
+		{
+			$user = $this->getCurrentUser();
+		}
+		$user->setDataArray($profile);
+		$userProfileRepo = $this->getUserProfileRepo();
+		$userProfile = $userProfileRepo->findByUser($user);
+		$userProfile->setDataArray($profile);
+		$this->getUserRepo()->update($user);
+		return $userProfileRepo->update($userProfile);
+	}
+	
+	/**
 	 * Change an email address
 	 * @param array $data
 	 * @param type $user
@@ -59,7 +80,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 			$user->setEmail($email);
 			$user->unVerifyEmailAddress(FALSE);
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
-			$this->getUserMapper()->update($user);
+			$this->getUserRepo()->update($user);
 			if ($this->getOptions('dxuser')->getEnableEmailVerification())
 			{
 				$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
@@ -103,7 +124,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 		$userCodesRepo->removeCode($user, $typeOf);
 		$userCodeClass = $this->getOptions()->getEntityUserCode();
 		$userCode = new $userCodeClass;
-		if($formerCode)
+		if ($formerCode)
 		{
 			$oldEmail = $formerCode->getExtra('email');
 			$userCode->addExtra('email', $oldEmail);
@@ -119,67 +140,6 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	}
 
 	/**
-	 * REturn the Current User
-	 * @return boolean|\DxUser\Entity\Users
-	 */
-	public function getCurrentUser()
-	{
-		if ($this->getAuthService()->hasIdentity())
-		{
-			return $this->getUserById($this->getAuthService()->getIdentity()->getId());
-		}
-		return FALSE;
-	}
-
-	/**
-	 * Get user by Id
-	 * @param integer $userId
-	 * @return boolean|\DxUser\Entity\Users
-	 */
-	public function getUserById($userId)
-	{
-		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
-		$user = $userRepo->findById($userId);
-		if (is_array($user) && isset($user[0]))
-		{
-			return $user[0];
-		}
-		return FALSE;
-	}
-
-	/**
-	 * Get a user by Email Address
-	 * @param string $email
-	 * @return boolean|\DxUser\Entity\Users
-	 */
-	public function getUserByEmail($email)
-	{
-		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
-		$user = $userRepo->findByEmail($email);
-		if (is_array($user) && isset($user[0]))
-		{
-			return $user[0];
-		}
-		return FALSE;
-	}
-
-	/**
-	 * Get a user by Username
-	 * @param string $username
-	 * @return boolean|\DxUser\Entity\Users
-	 */
-	public function getUserByUsername($username)
-	{
-		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
-		$user = $userRepo->findByUsername($username);
-		if (is_array($user) && isset($user[0]))
-		{
-			return $user[0];
-		}
-		return FALSE;
-	}
-
-	/**
 	 * Two Stage SignUp
 	 *
 	 * @param array $data The User Object
@@ -192,8 +152,10 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 		{
 			$userClass = $this->getOptions()->getUserEntityClass();
 			$user = new $userClass;
+			$userProfile = new \DxUser\Entity\UserProfile;
 			$user->setEmail($data['fsMain']['email']);
 			$user->setPassword($data['fsMain']['newPassword']);
+			$user->setProfile($userProfile);
 			$user->unVerifyEmailAddress();
 
 			$bcrypt = new Bcrypt;
@@ -209,7 +171,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 				$user->setDisplayName($data['display_name']);
 			}
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
-			$this->getUserMapper()->insert($user);
+			$this->getUserRepo()->insert($user);
 			if ($this->getOptions()->getEnableEmailVerification())
 			{
 				$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
@@ -375,7 +337,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 			$pass = $bcrypt->create($newPass);
 			$currentUser->setPassword($pass);
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $currentUser));
-			$this->getUserMapper()->update($currentUser);
+			$this->getUserRepo()->update($currentUser);
 			if ($this->getOptions('dxuser')->getSendEmailAfterPasswordUpdate())
 			{
 				$message = new Message();
@@ -482,6 +444,63 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	}
 
 	/**
+	 * REturn the Current User
+	 * @return boolean|\DxUser\Entity\Users
+	 */
+	public function getCurrentUser()
+	{
+		if ($this->getAuthService()->hasIdentity())
+		{
+			return $this->getUserById($this->getAuthService()->getIdentity()->getId());
+		}
+		return FALSE;
+	}
+
+	/**
+	 * REturn the User Profile
+	 * @param object $user DxUser\Entity\User
+	 * @return DxUser\Entity\UserProfile
+	 */
+	public function getProfile($user)
+	{
+		$userRepo = $this->getUserProfileRepo();
+		return $userRepo->findByUser($user);
+	}
+	
+	/**
+	 * Get user by Id
+	 * @param integer $userId
+	 * @return boolean|\DxUser\Entity\Users
+	 */
+	public function getUserById($userId)
+	{
+		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		return $userRepo->findById($userId);
+	}
+
+	/**
+	 * Get a user by Email Address
+	 * @param string $email
+	 * @return boolean|\DxUser\Entity\Users
+	 */
+	public function getUserByEmail($email)
+	{
+		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		return $userRepo->findByEmail($email);
+	}
+
+	/**
+	 * Get a user by Username
+	 * @param string $username
+	 * @return boolean|\DxUser\Entity\Users
+	 */
+	public function getUserByUsername($username)
+	{
+		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		return $userRepo->findByUsername($username);
+	}
+
+	/**
 	 * getUserMapper
 	 *
 	 * @return UserMapperInterface
@@ -489,6 +508,24 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	public function getUserMapper()
 	{
 		return $this->getServiceManager()->get('zfcuser_user_mapper');
+	}
+
+	/**
+	 * REturnt he User Repo
+	 * @return type
+	 */
+	public function getUserRepo()
+	{
+		return $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+	}
+
+	/**
+	 * REturnt he User Repo
+	 * @return type
+	 */
+	public function getUserProfileRepo()
+	{
+		return $this->getEntityManager()->getRepository('DxUser\Entity\UserProfile');
 	}
 
 	/**

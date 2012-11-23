@@ -7,9 +7,6 @@ use DxUser\Controller\ZfcUser;
 
 class PasswordController extends ZfcUser
 {
-
-	protected $modulePrefix = 'dxuser';
-
 	public function indexAction()
 	{
 		if (!$this->zfcUserAuthentication()->hasIdentity())

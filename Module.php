@@ -101,6 +101,13 @@ class Module
 					$form = new \Dxapp\Form\Form('accountEmail','accountEmail.xml', $options, $sm);
 					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('accountEmail.xml', $options, $sm));
 					return $form;
+				},
+				'dxuser_form_account_profile' => function($sm)
+				{
+					$options = $sm->get('dxuser_module_options');
+					$form = new \Dxapp\Form\Form('accountProfile','accountProfile.xml', $options, $sm);
+					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('accountProfile.xml', $options, $sm));
+					return $form;
 				}
 			)
 		);

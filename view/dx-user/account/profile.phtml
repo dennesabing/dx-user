@@ -1,7 +1,18 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-?>
+$html = '';
+$this->dxBreadcrumb()->add('memberAccount', array('anchor' => 'Account'));
+$this->dxBreadcrumb()->add('memberAccountProfile', array('anchor' => 'Update Profile'));
+$this->partial('dx-user/account/nav');
+
+$this->dxHtml()->setTitle('Update Profile');
+
+if ($this->success)
+{
+	$this->dxAlert()->addSuccess('<strong>Profile updated!</strong>.');
+}
+$form = $this->form;
+$form->prepare();
+$html .= $this->formTwb($form, $this->dxConfig()->getOptions()->getFormTypeLayout(), $this->formDisplayOptions);
+
+echo $html;
