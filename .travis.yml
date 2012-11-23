@@ -10,6 +10,7 @@ env:
 
 before_install:
  - cd test; git clone --depth=1 https://github.com/zendframework/zf2.git
+ - git clone --depth=1 https://github.com/dennesabing/dxapp.git Dxapp
 
 script:
  - phpunit

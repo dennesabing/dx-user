@@ -18,12 +18,6 @@ class Module
 	public function onBootstrap(Event $e)
 	{
 		$application = $e->getApplication();
-		$serviceManager = $application->getServiceManager();
-
-		$zfcUser = $serviceManager->get('zfcuser_user_service');
-		$zfcUserListener = new \DxUser\Listener\ZfcUser\Service\User();
-		$zfcUserListener->setServiceManager($serviceManager);
-		$zfcUserListener->attach($zfcUser->getEventManager());
 	}
 
 	public function getAutoloaderConfig()
