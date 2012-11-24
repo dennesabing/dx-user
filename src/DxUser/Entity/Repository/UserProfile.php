@@ -75,7 +75,7 @@ class UserProfile extends EntityRepository
 			$meta = $this->getClassMetadata();
 			if ($entity instanceof $meta->name)
 			{
-				$cacheId = $this->cachePrefix . 'findByUser' . $entity->getUserId();
+				$cacheId = $this->cachePrefix . 'findByUser' . $entity->getId();
 				if($cacheDriver->contains($cacheId))
 				{
 					$cacheDriver->delete($cacheId);

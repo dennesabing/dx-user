@@ -4,10 +4,13 @@ namespace DxUser\Service;
 
 use Dxapp\Service\Dx as DxService;
 use DxUser\Entity\UserCodesInterface;
+use Zend\View\Model\ViewModel;
+use Zend\Mail\Message;
 use Zend\Crypt\Password\Bcrypt;
 
 class User extends DxService
 {
+
 	/**
 	 * Update user profile
 	 * @param object $user
@@ -17,7 +20,7 @@ class User extends DxService
 	 */
 	public function updateProfile(array $profile, $user = NULL)
 	{
-		if(NULL === $user)
+		if (NULL === $user)
 		{
 			$user = $this->getCurrentUser();
 		}
@@ -28,7 +31,7 @@ class User extends DxService
 		$this->getUserRepo()->update($user);
 		return $userProfileRepo->update($userProfile);
 	}
-	
+
 	/**
 	 * Change an email address
 	 * @param array $data
@@ -48,17 +51,17 @@ class User extends DxService
 			$this->getUserRepo()->update($user);
 			if ($this->getModuleOptions('dxuser')->getEnableEmailVerification())
 			{
-				$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
+				$userCodesRepo = $this->getUserCodesRepo();
 				$typeOf = 'verify-email';
 				$userCodesRepo->removeCode($user, $typeOf);
-				$userCodeClass = $this->getModuleOptions()->getEntityUserCode();
-				$userCode = new $userCodeClass;
+				$userCodesEntity = $this->getUserCodesEntity();
+				$userCode = new $userCodesEntity;
 				$userCode->addExtra('email', $email);
 				$userCode->setUser($user);
 				$userCode->setTypeOf($typeOf);
 				$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
-				$this->em->persist($userCode);
-				$this->em->flush();
+				$this->getEntityManager()->persist($userCode);
+				$this->getEntityManager()->flush();
 				$this->sendVerifyEmail($userCode);
 				$success = TRUE;
 			}
@@ -83,12 +86,12 @@ class User extends DxService
 	{
 		$user = $this->getAuth()->getIdentity();
 		$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
-		$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
+		$userCodesRepo = $this->getUserCodesRepo();
 		$typeOf = 'verify-email';
 		$formerCode = $userCodesRepo->findUserCode($user, $typeOf, FALSE);
 		$userCodesRepo->removeCode($user, $typeOf);
-		$userCodeClass = $this->getModuleOptions()->getEntityUserCode();
-		$userCode = new $userCodeClass;
+		$userCodesEntity = $this->getUserCodesEntity();
+		$userCode = new $userCodesEntity;
 		if ($formerCode)
 		{
 			$oldEmail = $formerCode->getExtra('email');
@@ -97,8 +100,8 @@ class User extends DxService
 		$userCode->setUser($user);
 		$userCode->setTypeOf($typeOf);
 		$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
-		$this->em->persist($userCode);
-		$this->em->flush();
+		$this->getEntityManager()->persist($userCode);
+		$this->getEntityManager()->flush();
 		$this->sendVerifyEmail($userCode);
 		$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
 		return $userCode;
@@ -115,12 +118,13 @@ class User extends DxService
 	{
 		if (is_array($data))
 		{
-			$userClass = $this->getModuleOptions()->getUserEntityClass();
-			$user = new $userClass;
-			$userProfile = new \DxUser\Entity\UserProfile;
+			$userEntityClass = $this->getUserEntity();
+			$userProfileEntityClass = $this->getUserProfileEntity();
+			$user = new $userEntityClass;
+			$userProfile = new $userProfileEntityClass;
+			$userProfile->setFirstName('tesdfsdf');
 			$user->setEmail($data['fsMain']['email']);
 			$user->setPassword($data['fsMain']['newPassword']);
-			$user->setProfile($userProfile);
 			$user->unVerifyEmailAddress();
 
 			$bcrypt = new Bcrypt;
@@ -136,20 +140,24 @@ class User extends DxService
 				$user->setDisplayName($data['display_name']);
 			}
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
-			$this->getUserRepo()->insert($user);
-			if ($this->getModuleOptions()->getEnableEmailVerification())
+			$this->getEntityManager()->persist($user);
+			$this->getEntityManager()->flush();
+			$userProfile->setUser($user);
+			$this->getEntityManager()->persist($userProfile);
+			$this->getEntityManager()->flush();
+			if ($this->getModuleOptions('dxuser')->getEnableEmailVerification())
 			{
-				$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
+				$userCodesRepo = $this->getUserCodesRepo();
 				$typeOf = 'verify-email';
 				$userCodesRepo->removeCode($user, $typeOf);
-				$userCodeClass = $this->getModuleOptions()->getEntityUserCode();
-				$userCode = new $userCodeClass;
+				$userCodesEntity = $this->getUserCodesEntity();
+				$userCode = new $userCodesEntity;
 				$userCode->setUser($user);
 				$userCode->setTypeOf($typeOf);
 				$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
-				$this->em->persist($userCode);
-				$this->em->flush();
+				$this->getEntityManager()->persist($userCode);
 				$this->sendVerifyEmail($userCode);
+				$this->getEntityManager()->flush();
 				return $userCode;
 			}
 			$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user));
@@ -166,15 +174,14 @@ class User extends DxService
 		$message = new Message();
 		$message->addFrom($this->getModuleOptions()->getEmailNoReplySender(), $this->getModuleOptions()->getEmailNoReplySender())
 				->addTo($userCode->getUser()->getEmail())
-				->setSubject($this->getModuleOptions()->getEmailVerifySubject());
+				->setSubject($this->getModuleOptions('dxuser')->getEmailVerifySubject());
 		$viewModel = new ViewModel(array(
 					'userCode' => $userCode,
 				));
-		$viewModel->setTemplate($this->getModuleOptions()->getTemplateVerifyEmail());
+		$viewModel->setTemplate($this->getModuleOptions('dxuser')->getTemplateVerifyEmail());
 		$body = $this->renderer->render($viewModel);
 		$message->setBody($body);
-		$transport = new SendmailTransport($this->getServiceManager());
-		$transport->send($message);
+		$this->send($message);
 	}
 
 	/**
@@ -196,15 +203,15 @@ class User extends DxService
 			}
 			$code = $data['code'];
 			$typeOf = 'verify-email';
-			$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
+			$userCodesRepo = $this->getUserCodesRepo();
 			$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
 			if ($userCode)
 			{
 				$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
 				$user->verifyEmailAddress();
-				$this->em->persist($user);
-				$this->em->remove($userCode);
-				$this->em->flush();
+				$this->getEntityManager()->persist($user);
+				$this->getEntityManager()->remove($userCode);
+				$this->getEntityManager()->flush();
 				$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'userCode' => $userCode));
 				return TRUE;
 			}
@@ -219,21 +226,21 @@ class User extends DxService
 	 */
 	public function resetPassword($email)
 	{
-		$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getUserEntityClass());
+		$userRepo = $this->getUserRepo();
 		$user = $userRepo->findByEmail($email);
 		if ($user)
 		{
-			$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
+			$userCodesRepo = $this->getUserCodesRepo();
 			$typeOf = 'reset-password';
 			$userCodesRepo->removeCode($user, $typeOf);
-			$userCodeEntity = $this->getModuleOptions()->getEntityUserCode();
-			$userCode = new $userCodeEntity;
+			$userCodesEntity = $this->getUserCodesEntity();
+			$userCode = new $userCodesEntity;
 			$userCode->setUser($user);
 			$userCode->setTypeOf($typeOf);
 			$userCode->setCode(md5(time() . $userCode->getTypeOf() . $user->getEmail()));
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user, 'userCode' => $userCode));
-			$this->em->persist($userCode);
-			$this->em->flush();
+			$this->getEntityManager()->persist($userCode);
+			$this->getEntityManager()->flush();
 			$this->sendResetPassword($userCode);
 			$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'userCode' => $userCode));
 			return $userCode;
@@ -250,11 +257,11 @@ class User extends DxService
 		$message = new Message();
 		$message->addFrom($this->getModuleOptions()->getEmailNoReplySender(), $this->getModuleOptions()->getEmailNoReplySender())
 				->addTo($userCode->getUser()->getEmail())
-				->setSubject($this->getModuleOptions()->getEmailResetPasswordSubject());
+				->setSubject($this->getModuleOptions('dxuser')->getEmailResetPasswordSubject());
 		$viewModel = new ViewModel(array(
 					'userCode' => $userCode,
 				));
-		$viewModel->setTemplate($this->getModuleOptions()->getTemplateResetPasswordEmail());
+		$viewModel->setTemplate($this->getModuleOptions('dxuser')->getTemplateResetPasswordEmail());
 		$body = $this->renderer->render($viewModel);
 		$message->setBody($body);
 		$this->send($message);
@@ -269,13 +276,13 @@ class User extends DxService
 	{
 		if (isset($data['email']) && isset($data['code']))
 		{
-			$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getUserEntityClass());
+			$userRepo = $this->getUserRepo();
 			$user = $userRepo->findByEmail($data['email']);
 			if ($user)
 			{
 				$code = $data['code'];
 				$typeOf = 'reset-password';
-				$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
+				$userCodesRepo = $this->getUserCodesRepo();
 				$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
 				if ($userCode)
 				{
@@ -307,13 +314,13 @@ class User extends DxService
 				$message = new Message();
 				$message->addFrom($this->getModuleOptions()->getEmailNoReplySender(), $this->getModuleOptions()->getEmailNoReplySender())
 						->addTo($currentUser->getEmail())
-						->setSubject($this->getModuleOptions()->getEmailPasswordChangedSubject());
+						->setSubject($this->getModuleOptions('dxuser')->getEmailPasswordChangedSubject());
 				$viewModel = new ViewModel(array(
 							'newCredential' => $newPass,
 							'user' => $currentUser,
 							'hasIdentity' => TRUE
 						));
-				$viewModel->setTemplate($this->getModuleOptions()->getTemplateChangedPasswordEmail());
+				$viewModel->setTemplate($this->getModuleOptions('dxuser')->getTemplateChangedPasswordEmail());
 				$body = $this->renderer->render($viewModel);
 				$message->setBody($body);
 				$this->send($message);
@@ -361,9 +368,9 @@ class User extends DxService
 		$email = $data['email'];
 		$newPassword = $data['newCredential'];
 		$typeOf = 'reset-password';
-		$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getUserEntityClass());
+		$userRepo = $this->getUserRepo();
 		$user = $userRepo->findByEmail($email);
-		$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
+		$userCodesRepo = $this->getUserCodesRepo();
 		$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
 		if ($userCode)
 		{
@@ -375,10 +382,10 @@ class User extends DxService
 
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
 			$this->changedPasswordSendEmail($newPassword, $userCode);
-			$this->em->persist($user);
-			$this->em->remove($userCode);
+			$this->getEntityManager()->persist($user);
+			$this->getEntityManager()->remove($userCode);
 			$userCodesRepo->removeCode($user, $typeOf);
-			$this->em->flush();
+			$this->getEntityManager()->flush();
 			$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user));
 			return TRUE;
 		}
@@ -394,12 +401,12 @@ class User extends DxService
 		$message = new Message();
 		$message->addFrom($this->getModuleOptions()->getEmailNoReplySender(), $this->getModuleOptions()->getEmailNoReplySender())
 				->addTo($userCode->getUser()->getEmail())
-				->setSubject($this->getModuleOptions()->getEmailPasswordChangedSubject());
+				->setSubject($this->getModuleOptions('dxuser')->getEmailPasswordChangedSubject());
 		$viewModel = new ViewModel(array(
 					'userCode' => $userCode,
 					'newCredential' => $newCredential
 				));
-		$viewModel->setTemplate($this->getModuleOptions()->getTemplateChangedPasswordEmail());
+		$viewModel->setTemplate($this->getModuleOptions('dxuser')->getTemplateChangedPasswordEmail());
 		$body = $this->renderer->render($viewModel);
 		$message->setBody($body);
 		$this->send($message);
@@ -428,7 +435,7 @@ class User extends DxService
 		$userRepo = $this->getUserProfileRepo();
 		return $userRepo->findByUser($user);
 	}
-	
+
 	/**
 	 * Get user by Id
 	 * @param integer $userId
@@ -473,12 +480,30 @@ class User extends DxService
 	}
 
 	/**
+	 * REturn the User Entity Name
+	 * @return string
+	 */
+	public function getUserEntity()
+	{
+		return $this->getModuleOptions('dxuser')->getUserEntityClass();
+	}
+
+	/**
 	 * REturnt he User Repo
 	 * @return type
 	 */
 	public function getUserRepo()
 	{
-		return $this->getEntityManager()->getRepository($this->getModuleOptions('dxuser')->getUserEntityClass());
+		return $this->getEntityManager()->getRepository($this->getUserEntity());
+	}
+
+	/**
+	 * REturn the UserProfile Entity name
+	 * @return string
+	 */
+	public function getUserProfileEntity()
+	{
+		return 'DxUser\Entity\UserProfile';
 	}
 
 	/**
@@ -489,7 +514,25 @@ class User extends DxService
 	{
 		return $this->getEntityManager()->getRepository('DxUser\Entity\UserProfile');
 	}
-	
+
+	/**
+	 * REturn the User Codes Entity Name
+	 * @return string
+	 */
+	public function getUserCodesEntity()
+	{
+		return $this->getModuleOptions('dxuser')->getEntityUserCode();
+	}
+
+	/**
+	 * Return the UserCode Repo
+	 * @return type
+	 */
+	public function getUserCodesRepo()
+	{
+		return $this->getEntityManager()->getRepository($this->getUserCodesEntity());
+	}
+
 	/**
 	 * Return the ZfcUserOptions
 	 */
@@ -497,4 +540,5 @@ class User extends DxService
 	{
 		return $this->getModuleOptions('zfcuser_module_options');
 	}
+
 }

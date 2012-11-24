@@ -3,8 +3,6 @@
 namespace DxUser\Controller;
 
 use Zend\Stdlib\ResponseInterface as Response;
-use Zend\Stdlib\Parameters;
-use Zend\View\Model\ViewModel;
 use ZfcUser\Controller\UserController as ZfcUserController;
 
 class ZfcUser extends ZfcUserController
@@ -37,7 +35,8 @@ class ZfcUser extends ZfcUserController
 	 */
 	public function getRedirectUrl()
 	{
-		if ($this->getOptions()->getUseRedirectParameterIfPresent() && $this->getRequest()->getQuery()->get('redirect'))
+		if ($this->getModuleOptions('zfcuser_module_options')->getUseRedirectParameterIfPresent() 
+				&& $this->getRequest()->getQuery()->get('redirect'))
 		{
 			return $this->getRequest()->getQuery()->get('redirect');
 		}

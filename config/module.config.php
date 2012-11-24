@@ -1,5 +1,5 @@
 <?php
-
+namespace DxUser;
 $config = array(
 	'view_manager' => array(
 		'template_path_stack' => array(

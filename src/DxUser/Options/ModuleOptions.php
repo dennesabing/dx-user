@@ -20,12 +20,6 @@ class ModuleOptions extends AbstractOptions
 	protected $entityUserCode = 'DxUser\Entity\UserCodes';
 
 	/**
-	 * Enable/Disable email senting
-	 * @var boolean
-	 */
-	protected $emailSending = TRUE;
-
-	/**
 	 * Enable email verification
 	 * @var boolean
 	 */
@@ -36,18 +30,6 @@ class ModuleOptions extends AbstractOptions
 	 * @var string
 	 */
 	protected $templateVerifyEmail = 'dx-user/email/email-verify';
-
-	/**
-	 * The email address of the sender of the email verification
-	 * @var string
-	 */
-	protected $emailNoReplySender = 'no-reply@localhost';
-
-	/**
-	 * The name of the sender of the email verification
-	 * @var string
-	 */
-	protected $emailNoReplySenderName = 'No Reply';
 
 	/**
 	 * The subject of the email verification
@@ -343,55 +325,6 @@ class ModuleOptions extends AbstractOptions
 	public function getRouteMain()
 	{
 		return $this->getServiceManager()->get('dxapp_module_options')->getRouteMain();
-	}
-
-	/**
-	 * Return email sending status
-	 * @return boolean
-	 */
-	public function getEmailSending()
-	{
-		return $this->getServiceManager()->get('dxapp_module_options')->getEmailSending();
-	}
-
-	/**
-	 * Set the sender - email of the Email verifcation
-	 * @param string $email The email address
-	 * @return \DxUser\Options\ModuleOptions 
-	 */
-	public function setEmailNoReplySender($email)
-	{
-		$this->emailNoReplySender = $email;
-		return $this;
-	}
-
-	/**
-	 * Return the email address of the sender of email verify
-	 * @return string
-	 */
-	public function getEmailNoReplySender()
-	{
-		return $this->emailNoReplySender;
-	}
-
-	/**
-	 * Set the Name of the sender for the email verification
-	 * @param string $name The Name of the sender
-	 * @return \DxUser\Options\ModuleOptions 
-	 */
-	public function setEmailNoReplySenderName($name)
-	{
-		$this->emailNoReplySenderName = $name;
-		return $this;
-	}
-
-	/**
-	 * Get the name of the sender of the email verification
-	 * @return string
-	 */
-	public function getEmailNoReplySenderName()
-	{
-		return $this->emailNoReplySenderName;
 	}
 
 	/**

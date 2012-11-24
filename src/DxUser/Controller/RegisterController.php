@@ -10,21 +10,21 @@ class RegisterController extends ZfcUser
 {
 	public function indexAction()
 	{
-		if (!$this->zfcUserAuthentication()->hasIdentity())
+		if (!$this->dxController()->getAuth()->hasIdentity())
 		{
-			return $this->redirect()->toRoute($this->getModuleOptions()->getRouteRegistration());
+			return $this->redirect()->toRoute($this->dxController()->getModuleOptions('dxuser')->getRouteRegistration());
 		}
-		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
+		return $this->redirect()->toRoute($this->dxController()->getModuleOptions()->getRouteMain());
 	}
 
 	public function registerAction()
 	{
 		$this->layout('layout/2column-rightbar');
-		if (!$this->zfcUserAuthentication()->hasIdentity())
+		if (!$this->dxController()->getAuth()->hasIdentity())
 		{
 			$viewData = array();
 			$viewData['redirect'] = $this->getRedirectUrl();
-			$viewData['enableRegistration'] = $this->getZfcUserOptions()->getEnableRegistration();
+			$viewData['enableRegistration'] = $this->dxController()->getModuleOptions('zfcuser_module_options')->getEnableRegistration();
 			$form = $this->getRegisterForm();
 			if ($this->request->isPost())
 			{
@@ -40,9 +40,9 @@ class RegisterController extends ZfcUser
 							$viewData['userCode'] = $user;
 							$user = $user->getUser();
 						}
-						if ($this->getZfcUserOptions()->getLoginAfterRegistration())
+						if ($this->dxController()->getModuleOptions('zfcuser_module_options')->getLoginAfterRegistration())
 						{
-							$identityFields = $this->getZfcUserOptions()->getAuthIdentityFields();
+							$identityFields = $this->dxController()->getModuleOptions('zfcuser_module_options')->getAuthIdentityFields();
 							if (in_array('email', $identityFields))
 							{
 								$post['identity'] = $user->getEmail();
@@ -67,7 +67,7 @@ class RegisterController extends ZfcUser
 			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
 			return new ViewModel($viewData);
 		}
-		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
+		return $this->redirect()->toRoute($this->dxController()->getModuleOptions()->getRouteMain());
 	}
 
 	/**
@@ -77,10 +77,10 @@ class RegisterController extends ZfcUser
 	public function verifyAction()
 	{
 		$this->layout('layout/2column-leftbar');
-		if ($this->getModuleOptions('dxuser')->getEnableEmailVerification())
+		if ($this->dxController()->getModuleOptions('dxuser')->getEnableEmailVerification())
 		{
 			$viewData = array();
-			$viewData['enableRegistration'] = $this->getZfcUserOptions()->getEnableRegistration();
+			$viewData['enableRegistration'] = $this->dxController()->getModuleOptions('zfcuser_module_options')->getEnableRegistration();
 			$email = urldecode($this->getEvent()->getRouteMatch()->getParam('email'));
 			$code = $this->getEvent()->getRouteMatch()->getParam('code');
 			$user = $this->getUserService()->getUserByEmail($email);
@@ -92,7 +92,7 @@ class RegisterController extends ZfcUser
 					$user = $this->getUserService()->getUserById($this->dxController()->getAuth()->getIdentity()->getId());
 					if (!$email == $user->getEmail())
 					{
-						return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
+						return $this->redirect()->toRoute($this->dxController()->getModuleOptions()->getRouteMain());
 					}
 				}
 				if ($user->isEmailVerified())
@@ -108,7 +108,7 @@ class RegisterController extends ZfcUser
 				return new ViewModel($viewData);
 			}
 		}
-		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteMain());
+		return $this->redirect()->toRoute($this->dxController()->getModuleOptions()->getRouteMain());
 	}
 
 	/**

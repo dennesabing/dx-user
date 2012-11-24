@@ -15,30 +15,35 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class UserProfile
 {
-
 	/**
-	 * @ORM\Id 
+	 * @ORM\Id
 	 * @ORM\Column(type="integer",name="user_id") 
 	 */
 	private $userId;
-
+	
+	/**
+     * @ORM\OneToOne(targetEntity="DxUser\Entity\User", inversedBy="profile")
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="user_id", onDelete="CASCADE")
+	 */
+	private $user;
+	
 	/**
 	 * The first name
-	 * @ORM\Column(type="string",name="f_name", length=64) 
+	 * @ORM\Column(type="string",name="f_name", length=64, nullable=true) 
 	 * @var string
 	 */
 	private $firstName = NULL;
 
 	/**
 	 * The last name
-	 * @ORM\Column(type="string",name="l_name", length=64) 
+	 * @ORM\Column(type="string",name="l_name", length=64, nullable=true) 
 	 * @var string
 	 */
 	private $lastName = NULL;
 
 	/**
 	 * The middle name
-	 * @ORM\Column(type="string",name="m_name", length=64) 
+	 * @ORM\Column(type="string",name="m_name", length=64, nullable=true) 
 	 * @var string
 	 */
 	private $middleName = NULL;
@@ -113,22 +118,33 @@ class UserProfile
 	}
 
 	/**
-	 * @return the $userId
-	 */
-	public function getUserId()
-	{
-		return $this->userId;
-	}
-
-	/**
-	 * @param  integer	$userId
+	 * SEt the User
+	 * @param type $user
 	 * @return \DxUser\Entity\UserProfile
 	 */
-	public function setUserId($userId)
+	public function setUser($user)
 	{
-		$this->userId = $userId;
-
+		$this->user = $user;
+		$this->userId = $user->getId();
 		return $this;
+	}
+	
+	/**
+	 * REturn USer
+	 * @return type
+	 */
+	public function getUser()
+	{
+		return $this->user;
+	}
+	
+	/**
+	 * Return the User Id
+	 * @return integer
+	 */
+	public function getId()
+	{
+		return $this->userId;
 	}
 
 	/**

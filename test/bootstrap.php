@@ -1,5 +1,5 @@
 <?php
-namespace DxUsers;
+namespace DxUser;
 
 use Zend\Loader\AutoloaderFactory;
 use Zend\Mvc\Service\ServiceManagerConfig;

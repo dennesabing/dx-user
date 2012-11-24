@@ -68,7 +68,7 @@ if($displayForm)
 {
 	$form = $this->form;
 	$form->prepare();
-	$html .= $this->formTwb($form, $this->dx()->getOptions()->getFormTypeLayout(), $this->formDisplayOptions);	
+	$html .= $this->formTwb($form, $this->dx()->getModuleOptions()->getFormTypeLayout(), $this->formDisplayOptions);	
 }
 
 echo $html;

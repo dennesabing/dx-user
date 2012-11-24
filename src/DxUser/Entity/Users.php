@@ -46,8 +46,7 @@ class Users extends ZfcUserEntity
 	private $updated;
 	
 	/**
-     * @ORM\OneToOne(targetEntity="DxUser\Entity\UserProfile")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="user_id")
+	 * @ORM\OneToOne(targetEntity="DxUser\Entity\UserProfile", mappedBy="user")
 	 */
 	private $profile;
 
