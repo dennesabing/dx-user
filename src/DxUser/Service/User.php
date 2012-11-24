@@ -2,47 +2,12 @@
 
 namespace DxUser\Service;
 
-use Zend\Authentication\AuthenticationService;
-use Zend\Form\Form;
-use Zend\ServiceManager\ServiceManagerAwareInterface;
-use Zend\ServiceManager\ServiceManager;
-use Zend\Stdlib\Hydrator\ClassMethods;
-use Dxapp\EventManager\EventProvider;
-use DxUser\Options\ModuleOptions;
-use Dxapp\Service\MailTransport as SendmailTransport;
-use Zend\View\Model\ViewModel;
-use Zend\Mail\Message;
-use Zend\View\Renderer\PhpRenderer;
+use Dxapp\Service\Dx as DxService;
 use DxUser\Entity\UserCodesInterface;
 use Zend\Crypt\Password\Bcrypt;
 
-class User extends EventProvider implements ServiceManagerAwareInterface
+class User extends DxService
 {
-
-	/**
-	 * The View Renderer
-	 * @var object
-	 */
-	protected $renderer = NULL;
-
-	/**
-	 * The Doctrine Entity Manager
-	 * @var type 
-	 */
-	protected $em = NULL;
-
-	/**
-	 * the Module Options
-	 * @var type 
-	 */
-	protected $options = NULL;
-
-	/**
-	 * The Auth service
-	 * @var type 
-	 */
-	protected $authService = NULL;
-
 	/**
 	 * Update user profile
 	 * @param object $user
@@ -76,17 +41,17 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 		if (NULL === $user)
 		{
 			$email = $data['email'];
-			$user = $this->getAuthService()->getIdentity();
+			$user = $this->getAuth()->getIdentity();
 			$user->setEmail($email);
 			$user->unVerifyEmailAddress(FALSE);
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
 			$this->getUserRepo()->update($user);
-			if ($this->getOptions('dxuser')->getEnableEmailVerification())
+			if ($this->getModuleOptions('dxuser')->getEnableEmailVerification())
 			{
-				$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+				$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
 				$typeOf = 'verify-email';
 				$userCodesRepo->removeCode($user, $typeOf);
-				$userCodeClass = $this->getOptions()->getEntityUserCode();
+				$userCodeClass = $this->getModuleOptions()->getEntityUserCode();
 				$userCode = new $userCodeClass;
 				$userCode->addExtra('email', $email);
 				$userCode->setUser($user);
@@ -116,13 +81,13 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	 */
 	public function resendEmailVerification()
 	{
-		$user = $this->getAuthService()->getIdentity();
+		$user = $this->getAuth()->getIdentity();
 		$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
-		$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+		$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
 		$typeOf = 'verify-email';
 		$formerCode = $userCodesRepo->findUserCode($user, $typeOf, FALSE);
 		$userCodesRepo->removeCode($user, $typeOf);
-		$userCodeClass = $this->getOptions()->getEntityUserCode();
+		$userCodeClass = $this->getModuleOptions()->getEntityUserCode();
 		$userCode = new $userCodeClass;
 		if ($formerCode)
 		{
@@ -150,7 +115,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	{
 		if (is_array($data))
 		{
-			$userClass = $this->getOptions()->getUserEntityClass();
+			$userClass = $this->getModuleOptions()->getUserEntityClass();
 			$user = new $userClass;
 			$userProfile = new \DxUser\Entity\UserProfile;
 			$user->setEmail($data['fsMain']['email']);
@@ -172,12 +137,12 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 			}
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $user));
 			$this->getUserRepo()->insert($user);
-			if ($this->getOptions()->getEnableEmailVerification())
+			if ($this->getModuleOptions()->getEnableEmailVerification())
 			{
-				$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+				$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
 				$typeOf = 'verify-email';
 				$userCodesRepo->removeCode($user, $typeOf);
-				$userCodeClass = $this->getOptions()->getEntityUserCode();
+				$userCodeClass = $this->getModuleOptions()->getEntityUserCode();
 				$userCode = new $userCodeClass;
 				$userCode->setUser($user);
 				$userCode->setTypeOf($typeOf);
@@ -199,13 +164,13 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	public function sendVerifyEmail(UserCodesInterface $userCode)
 	{
 		$message = new Message();
-		$message->addFrom($this->getOptions()->getEmailNoReplySender(), $this->getOptions()->getEmailNoReplySender())
+		$message->addFrom($this->getModuleOptions()->getEmailNoReplySender(), $this->getModuleOptions()->getEmailNoReplySender())
 				->addTo($userCode->getUser()->getEmail())
-				->setSubject($this->getOptions()->getEmailVerifySubject());
+				->setSubject($this->getModuleOptions()->getEmailVerifySubject());
 		$viewModel = new ViewModel(array(
 					'userCode' => $userCode,
 				));
-		$viewModel->setTemplate($this->getOptions()->getTemplateVerifyEmail());
+		$viewModel->setTemplate($this->getModuleOptions()->getTemplateVerifyEmail());
 		$body = $this->renderer->render($viewModel);
 		$message->setBody($body);
 		$transport = new SendmailTransport($this->getServiceManager());
@@ -231,7 +196,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 			}
 			$code = $data['code'];
 			$typeOf = 'verify-email';
-			$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+			$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
 			$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
 			if ($userCode)
 			{
@@ -254,14 +219,14 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	 */
 	public function resetPassword($email)
 	{
-		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getUserEntityClass());
 		$user = $userRepo->findByEmail($email);
 		if ($user)
 		{
-			$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+			$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
 			$typeOf = 'reset-password';
 			$userCodesRepo->removeCode($user, $typeOf);
-			$userCodeEntity = $this->getOptions()->getEntityUserCode();
+			$userCodeEntity = $this->getModuleOptions()->getEntityUserCode();
 			$userCode = new $userCodeEntity;
 			$userCode->setUser($user);
 			$userCode->setTypeOf($typeOf);
@@ -283,17 +248,16 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	public function sendResetPassword(UserCodesInterface $userCode)
 	{
 		$message = new Message();
-		$message->addFrom($this->getOptions()->getEmailNoReplySender(), $this->getOptions()->getEmailNoReplySender())
+		$message->addFrom($this->getModuleOptions()->getEmailNoReplySender(), $this->getModuleOptions()->getEmailNoReplySender())
 				->addTo($userCode->getUser()->getEmail())
-				->setSubject($this->getOptions()->getEmailResetPasswordSubject());
+				->setSubject($this->getModuleOptions()->getEmailResetPasswordSubject());
 		$viewModel = new ViewModel(array(
 					'userCode' => $userCode,
 				));
-		$viewModel->setTemplate($this->getOptions()->getTemplateResetPasswordEmail());
+		$viewModel->setTemplate($this->getModuleOptions()->getTemplateResetPasswordEmail());
 		$body = $this->renderer->render($viewModel);
 		$message->setBody($body);
-		$transport = new SendmailTransport($this->getServiceManager());
-		$transport->send($message);
+		$this->send($message);
 	}
 
 	/**
@@ -305,13 +269,13 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	{
 		if (isset($data['email']) && isset($data['code']))
 		{
-			$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+			$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getUserEntityClass());
 			$user = $userRepo->findByEmail($data['email']);
 			if ($user)
 			{
 				$code = $data['code'];
 				$typeOf = 'reset-password';
-				$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+				$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
 				$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
 				if ($userCode)
 				{
@@ -328,32 +292,31 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	 */
 	public function changePassword(array $data)
 	{
-		if ($this->getAuthService()->hasIdentity())
+		if ($this->getAuth()->hasIdentity())
 		{
 			$newPass = $data['newCredential'];
-			$currentUser = $this->getAuthService()->getIdentity();
+			$currentUser = $this->getAuth()->getIdentity();
 			$bcrypt = new Bcrypt;
 			$bcrypt->setCost($this->getZfcUserOptions()->getPasswordCost());
 			$pass = $bcrypt->create($newPass);
 			$currentUser->setPassword($pass);
 			$this->getEventManager()->trigger(__FUNCTION__, $this, array('user' => $currentUser));
 			$this->getUserRepo()->update($currentUser);
-			if ($this->getOptions('dxuser')->getSendEmailAfterPasswordUpdate())
+			if ($this->getModuleOptions('dxuser')->getSendEmailAfterPasswordUpdate())
 			{
 				$message = new Message();
-				$message->addFrom($this->getOptions()->getEmailNoReplySender(), $this->getOptions()->getEmailNoReplySender())
+				$message->addFrom($this->getModuleOptions()->getEmailNoReplySender(), $this->getModuleOptions()->getEmailNoReplySender())
 						->addTo($currentUser->getEmail())
-						->setSubject($this->getOptions()->getEmailPasswordChangedSubject());
+						->setSubject($this->getModuleOptions()->getEmailPasswordChangedSubject());
 				$viewModel = new ViewModel(array(
 							'newCredential' => $newPass,
 							'user' => $currentUser,
 							'hasIdentity' => TRUE
 						));
-				$viewModel->setTemplate($this->getOptions()->getTemplateChangedPasswordEmail());
+				$viewModel->setTemplate($this->getModuleOptions()->getTemplateChangedPasswordEmail());
 				$body = $this->renderer->render($viewModel);
 				$message->setBody($body);
-				$transport = new SendmailTransport($this->getServiceManager());
-				$transport->send($message);
+				$this->send($message);
 			}
 			$this->getEventManager()->trigger(__FUNCTION__ . '.post', $this, array('user' => $currentUser));
 		}
@@ -374,7 +337,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	{
 		if (NULL === $user)
 		{
-			$user = $this->getAuthService()->getIdentity();
+			$user = $this->getAuth()->getIdentity();
 		}
 		$bcrypt = new Bcrypt;
 		$bcrypt->setCost($this->getZfcUserOptions()->getPasswordCost());
@@ -398,9 +361,9 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 		$email = $data['email'];
 		$newPassword = $data['newCredential'];
 		$typeOf = 'reset-password';
-		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getUserEntityClass());
 		$user = $userRepo->findByEmail($email);
-		$userCodesRepo = $this->getEntityManager()->getRepository($this->getOptions()->getEntityUserCode());
+		$userCodesRepo = $this->getEntityManager()->getRepository($this->getModuleOptions()->getEntityUserCode());
 		$userCode = $userCodesRepo->findUserCode($user, $typeOf, $code);
 		if ($userCode)
 		{
@@ -429,18 +392,17 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	public function changedPasswordSendEmail($newCredential, $userCode)
 	{
 		$message = new Message();
-		$message->addFrom($this->getOptions()->getEmailNoReplySender(), $this->getOptions()->getEmailNoReplySender())
+		$message->addFrom($this->getModuleOptions()->getEmailNoReplySender(), $this->getModuleOptions()->getEmailNoReplySender())
 				->addTo($userCode->getUser()->getEmail())
-				->setSubject($this->getOptions()->getEmailPasswordChangedSubject());
+				->setSubject($this->getModuleOptions()->getEmailPasswordChangedSubject());
 		$viewModel = new ViewModel(array(
 					'userCode' => $userCode,
 					'newCredential' => $newCredential
 				));
-		$viewModel->setTemplate($this->getOptions()->getTemplateChangedPasswordEmail());
+		$viewModel->setTemplate($this->getModuleOptions()->getTemplateChangedPasswordEmail());
 		$body = $this->renderer->render($viewModel);
 		$message->setBody($body);
-		$transport = new SendmailTransport($this->getServiceManager());
-		$transport->send($message);
+		$this->send($message);
 	}
 
 	/**
@@ -449,9 +411,9 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	 */
 	public function getCurrentUser()
 	{
-		if ($this->getAuthService()->hasIdentity())
+		if ($this->getAuth()->hasIdentity())
 		{
-			return $this->getUserById($this->getAuthService()->getIdentity()->getId());
+			return $this->getUserById($this->getAuth()->getIdentity()->getId());
 		}
 		return FALSE;
 	}
@@ -474,7 +436,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	 */
 	public function getUserById($userId)
 	{
-		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions('dxuser')->getUserEntityClass());
 		return $userRepo->findById($userId);
 	}
 
@@ -485,7 +447,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	 */
 	public function getUserByEmail($email)
 	{
-		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions('dxuser')->getUserEntityClass());
 		return $userRepo->findByEmail($email);
 	}
 
@@ -496,7 +458,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	 */
 	public function getUserByUsername($username)
 	{
-		$userRepo = $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions('dxuser')->getUserEntityClass());
 		return $userRepo->findByUsername($username);
 	}
 
@@ -516,7 +478,7 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	 */
 	public function getUserRepo()
 	{
-		return $this->getEntityManager()->getRepository($this->getOptions()->getUserEntityClass());
+		return $this->getEntityManager()->getRepository($this->getModuleOptions('dxuser')->getUserEntityClass());
 	}
 
 	/**
@@ -527,117 +489,12 @@ class User extends EventProvider implements ServiceManagerAwareInterface
 	{
 		return $this->getEntityManager()->getRepository('DxUser\Entity\UserProfile');
 	}
-
+	
 	/**
-	 * getAuthService
-	 *
-	 * @return AuthenticationService
-	 */
-	public function getAuthService()
-	{
-		if (null === $this->authService)
-		{
-			$this->setAuthService($this->getServiceManager()->get('zfcuser_auth_service'));
-		}
-		return $this->authService;
-	}
-
-	/**
-	 * setAuthenticationService
-	 *
-	 * @param AuthenticationService $authService
-	 * @return User
-	 */
-	public function setAuthService(AuthenticationService $authService)
-	{
-		$this->authService = $authService;
-		return $this;
-	}
-
-	/**
-	 * Set Doctrine Entity Manager
-	 *
-	 * @return User
-	 */
-	public function setEntityManager($em)
-	{
-		$this->em = $em;
-		return $this;
-	}
-
-	/**
-	 * Return the Entity Manager
-	 * @return type 
-	 */
-	public function getEntityManager()
-	{
-		return $this->em;
-	}
-
-	/**
-	 * Get the Module OPtions from SM
-	 *
-	 * @return UserServiceOptionsInterface
-	 */
-	public function getOptions()
-	{
-		if (!$this->options instanceof ModuleOptions)
-		{
-			$this->setOptions($this->getServiceManager()->get('dxuser_module_options'));
-		}
-		return $this->options;
-	}
-
-	/**
-	 * set service options
-	 *
-	 * @param UserServiceOptionsInterface $options
-	 */
-	public function setOptions(ModuleOptions $options)
-	{
-		$this->options = $options;
-	}
-
-	/**
-	 * gEt the ZfcUser Module Options
-	 * @return type 
+	 * Return the ZfcUserOptions
 	 */
 	public function getZfcUserOptions()
 	{
-		return $this->getServiceManager()->get('zfcuser_module_options');
+		return $this->getModuleOptions('zfcuser_module_options');
 	}
-
-	/**
-	 * Retrieve service manager instance
-	 *
-	 * @return ServiceManager
-	 */
-	public function getServiceManager()
-	{
-		return $this->serviceManager;
-	}
-
-	/**
-	 * Set service manager instance
-	 *
-	 * @param ServiceManager $locator
-	 * @return User
-	 */
-	public function setServiceManager(ServiceManager $serviceManager)
-	{
-		$this->serviceManager = $serviceManager;
-		return $this;
-	}
-
-	/**
-	 * Set the ViewRenderer Object
-	 * @param type $viewRenderer
-	 * @return \DxUser\Service\User 
-	 */
-	public function setViewRenderer($viewRenderer)
-	{
-		$this->renderer = $viewRenderer;
-		return $this;
-	}
-
 }

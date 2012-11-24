@@ -48,9 +48,7 @@ class Module
 				'dxuser_service_user' => function ($sm)
 				{
 					$userService = new \DxUser\Service\User();
-					$userService->setAuthService($sm->get('zfcuser_auth_service'));
 					$userService->setEntityManager($sm->get('doctrine.entitymanager.orm_default'));
-					$userService->setOptions($sm->get('dxuser_module_options'));
 					$userService->setViewRenderer($sm->get('ViewRenderer'));
 					return $userService;
 				},

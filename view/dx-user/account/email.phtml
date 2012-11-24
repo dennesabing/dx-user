@@ -12,7 +12,7 @@ if ($this->success)
 //	$this->dxAlert()->addSuccess('<strong>Successfull</strong><br />Email address updated.');
 	if ($this->enableEmailVerification)
 	{
-		if ($this->dxConfig()->getOptions()->inDevelopment())
+		if ($this->dx()->getModuleOptions()->inDevelopment())
 		{
 			$verifyUrl = $this->dxHtml()->url('dx-user-email-verify', 
 							array('email' => urlencode($this->userCode->getUser()->getEmail()), 
@@ -68,7 +68,7 @@ if($displayForm)
 {
 	$form = $this->form;
 	$form->prepare();
-	$html .= $this->formTwb($form, $this->dxConfig()->getOptions()->getFormTypeLayout(), $this->formDisplayOptions);	
+	$html .= $this->formTwb($form, $this->dx()->getOptions()->getFormTypeLayout(), $this->formDisplayOptions);	
 }
 
 echo $html;

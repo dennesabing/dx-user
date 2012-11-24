@@ -10,7 +10,7 @@ $this->dxHtml()->setTitle('Account Email Address');
 if ($this->success)
 {
 //	$this->dxAlert()->addSuccess('<strong>Successfull</strong><br />Email address updated.');
-	if ($this->dxConfig()->getOptions()->inDevelopment())
+	if ($this->dx()->getModuleOptions()->inDevelopment())
 	{
 		$verifyUrl = $this->dxHtml()->url('dx-user-email-verify', array('email' => urlencode($this->userCode->getUser()->getEmail()), 'code' => $this->userCode->getCode()), array('useSecureUrl' => TRUE, 'useAbsoluteUrl' => TRUE));
 		$verifyString .= '<a id="urlRegisterVerify" href="' . $verifyUrl . '" title="Verify Now">' . $verifyUrl . '</a><br /><br />';

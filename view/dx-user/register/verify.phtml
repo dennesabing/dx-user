@@ -23,7 +23,7 @@ if (isset($this->success) && $this->success)
 				Thank you very much.
 			</div>';
 
-	$urlContinue = $this->url($this->dxConfig()->getOptions()->getRouteMain());
+	$urlContinue = $this->url($this->dx()->getModuleOptions()->getRouteMain());
 	$html .= '<a href="' . $urlContinue . '" 
 					class="btn btn-large btn-primary">
 					<i class="icon-white icon-arrow-right"></i> Click here to continue...</a>';

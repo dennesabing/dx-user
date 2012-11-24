@@ -1,7 +1,7 @@
 <?php
 
-$routeRegister = $this->dxConfig()->getOptions('dxuser')->getRouteRegistration();
-$routePasswordReset = $this->dxConfig()->getOptions('dxuser')->getRoutePasswordReset();
+$routeRegister = $this->dx()->getModuleOptions('dxuser')->getRouteRegistration();
+$routePasswordReset = $this->dx()->getModuleOptions('dxuser')->getRoutePasswordReset();
 if(isset($this->error))
 {
 	$this->dxAlert()->addError('<b>Login Error</b><br />Email address and Password don\'t match.');
@@ -11,7 +11,7 @@ $this->dxBreadcrumb()->add('memberLogin', array('anchor' => 'Member Login'));
 $this->dxHtml()->setTitle('Member Login');
 $form = $this->form;
 $form->prepare();
-$html .= $this->formTwb($form, $this->dxConfig()->getOptions()->getFormTypeLayout(), $this->formDisplayOptions);
+$html .= $this->formTwb($form, $this->dx()->getModuleOptions()->getFormTypeLayout(), $this->formDisplayOptions);
 $html .= '<a href="' . $this->url($routePasswordReset) . ($this->redirect ? '?redirect=' . $this->redirect : '') . '">Forgot Password?</a>';
 if ($this->enableRegistration) :
 	$html .= ' | Not registered? <a href="' . $this->url($routeRegister) . ($this->redirect ? '?redirect=' . $this->redirect : '') . '">Sign up!</a>';
