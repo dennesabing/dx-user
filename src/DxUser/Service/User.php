@@ -413,6 +413,42 @@ class User extends DxService
 	}
 
 	/**
+	 * Check if the given user is an admin
+	 * @param object $user DxUser\Entity\User
+	 * @return boolean
+	 */
+	public function isAdmin($user = NULL)
+	{
+		if(NULL == $user)
+		{
+			$user = $this->getCurrentUser();
+		}
+		if($user)
+		{
+			$user = $this->getUserById($user);
+			$role = $user->getRole();
+			if($role == 'admin')
+			{
+				return TRUE;
+			}
+		}
+		return FALSE;
+	}
+	
+	/**
+	 * Check if a user is loggedIn
+	 * @param object $user DxUser\Entity\User
+	 * @TODO check if a certain user is login
+	 * @return boolean
+	 */
+	public function isLogin($user = NULL)
+	{
+		$user = '';
+		return $this->getAuth()->hasIdentity();
+	}
+	
+	
+	/**
 	 * REturn the Current User
 	 * @return boolean|\DxUser\Entity\Users
 	 */
@@ -448,10 +484,9 @@ class User extends DxService
 		{
 			$userId = $userId->getId();
 		}
-		dump($userId);die;
 		return $userRepo->findById($userId);
 	}
-
+	
 	/**
 	 * Get a user by Email Address
 	 * @param string $email

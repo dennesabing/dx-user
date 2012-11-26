@@ -107,7 +107,27 @@ class Users extends ZfcUserEntity
 		return $this;
 	}
 	
-
+	/**
+	 * Set the User Role
+	 * @param string $role
+	 * @return \DxUser\Entity\Users
+	 */
+	public function setRole($role)
+	{
+		$this->role = $role;
+		return $this;
+	}
+	
+	/**
+	 * Return the USer Role
+	 * @return string
+	 */
+	public function getRole()
+	{
+		return $this->role;
+	}
+	
+	
 	/**
 	 * Set values by using an array derived from a form
 	 * @param array $arr

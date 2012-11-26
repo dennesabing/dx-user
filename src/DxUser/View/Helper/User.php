@@ -33,20 +33,7 @@ class User extends AbstractHelper
 	 */
 	public function isAdmin($user = NULL)
 	{
-		if(NULL == $user)
-		{
-			$user = $this->getUserService()->getCurrentUser();
-		}
-		if($user)
-		{
-			$user = $this->getUserService()->getUserById($user);
-			$role = $user->getRole();
-			if($role == 'admin')
-			{
-				return TRUE;
-			}
-		}
-		return FALSE;
+		return $this->getUserService()->isAdmin($user);
 	}
 	
 	/**

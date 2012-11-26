@@ -53,7 +53,7 @@ class AccountController extends ZfcUser
 			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
 			return new ViewModel($viewData);
 		}
-		return $this->dxController()->gotoLogin($this->getRequest()->getUri());
+		return $this->dxController()->gotoLogin();
 	}
 
 	/**
@@ -94,7 +94,7 @@ class AccountController extends ZfcUser
 			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
 			return new ViewModel($viewData);
 		}
-		return $this->dxController()->gotoLogin($this->getRequest()->getUri());
+		return $this->dxController()->gotoLogin();
 	}
 
 	/**
@@ -143,7 +143,7 @@ class AccountController extends ZfcUser
 			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
 			return new ViewModel($viewData);
 		}
-		return $this->dxController()->gotoLogin($this->getRequest()->getUri());
+		return $this->dxController()->gotoLogin();
 	}
 
 	/**
@@ -175,7 +175,7 @@ class AccountController extends ZfcUser
 			}
 			return new ViewModel($viewData);
 		}
-		return $this->dxController()->gotoLogin($this->getRequest()->getUri());
+		return $this->dxController()->gotoLogin();
 	}
 
 	/**
