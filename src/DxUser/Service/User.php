@@ -446,8 +446,9 @@ class User extends DxService
 		$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions('dxuser')->getUserEntityClass());
 		if(is_object($userId))
 		{
-			$userId = $user->getId();
+			$userId = $userId->getId();
 		}
+		dump($userId);die;
 		return $userRepo->findById($userId);
 	}
 

@@ -105,4 +105,18 @@ class Module
 		);
 	}
 
+	
+
+	public function getViewHelperConfig()
+	{
+		return array(
+			'factories' => array(
+				'dxUser' => function()
+				{
+					return new \DxUser\View\Helper\User();
+				}
+			),
+		);
+	}
+	
 }
