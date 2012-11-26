@@ -17,6 +17,16 @@ class User extends AbstractHelper
 	}
 	
 	/**
+	 * Check if a user is loggedIn
+	 * @param object $user DxUser\Entity\User
+	 * @return boolean
+	 */
+	public function isLogin($user = NULL)
+	{
+		return $this->view->zfcUserIdentity();
+	}
+	
+	/**
 	 * Check if the given user is an admin
 	 * @param object $user DxUser\Entity\User
 	 * @return boolean
