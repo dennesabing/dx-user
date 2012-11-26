@@ -19,7 +19,7 @@ class AccountController extends ZfcUser
 			$viewData['user'] = $this->getUserService()->getCurrentUser();
 			return new ViewModel($viewData);
 		}
-		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
+		return $this->dxController()->gotoLogin();
 	}
 
 	/**
@@ -53,7 +53,7 @@ class AccountController extends ZfcUser
 			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
 			return new ViewModel($viewData);
 		}
-		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
+		return $this->dxController()->gotoLogin($this->getRequest()->getUri());
 	}
 
 	/**
@@ -94,7 +94,7 @@ class AccountController extends ZfcUser
 			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
 			return new ViewModel($viewData);
 		}
-		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
+		return $this->dxController()->gotoLogin($this->getRequest()->getUri());
 	}
 
 	/**
@@ -143,7 +143,7 @@ class AccountController extends ZfcUser
 			$viewData['formDisplayOptions'] = $form->getDisplayOptions();
 			return new ViewModel($viewData);
 		}
-		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
+		return $this->dxController()->gotoLogin($this->getRequest()->getUri());
 	}
 
 	/**
@@ -175,7 +175,7 @@ class AccountController extends ZfcUser
 			}
 			return new ViewModel($viewData);
 		}
-		return $this->redirect()->toRoute($this->getModuleOptions()->getRouteLogin());
+		return $this->dxController()->gotoLogin($this->getRequest()->getUri());
 	}
 
 	/**

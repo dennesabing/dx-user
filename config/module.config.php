@@ -153,7 +153,7 @@ $config = array(
 					'route' => '/login',
 					'defaults' => array(
 						'controller' => 'DxUser\Controller\Login',
-						'action' => 'login',
+						'action' => 'login'
 					),
 				),
 			),

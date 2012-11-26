@@ -27,7 +27,6 @@ class LoginController extends ZfcUser
 		{
 			$redirect = $this->getRequest()->getQuery()->get('redirect');
 		}
-
 		if (!$this->dxController()->getAuth()->hasIdentity())
 		{
 			$this->layout('layout/2column-rightbar');
