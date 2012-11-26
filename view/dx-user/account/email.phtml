@@ -12,6 +12,7 @@ if ($this->success)
 //	$this->dxAlert()->addSuccess('<strong>Successfull</strong><br />Email address updated.');
 	if ($this->enableEmailVerification)
 	{
+		$verifyString = '';
 		if ($this->dx()->getModuleOptions()->inDevelopment())
 		{
 			$verifyUrl = $this->dxHtml()->url('dx-user-email-verify', 

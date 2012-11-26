@@ -38,7 +38,7 @@ class User extends DxService
 	 * @param type $user
 	 * @return boolean
 	 */
-	public function changeEmail(array $data, $user)
+	public function changeEmail(array $data, $user = NULL)
 	{
 		$success = FALSE;
 		if (NULL === $user)
@@ -444,6 +444,10 @@ class User extends DxService
 	public function getUserById($userId)
 	{
 		$userRepo = $this->getEntityManager()->getRepository($this->getModuleOptions('dxuser')->getUserEntityClass());
+		if(is_object($userId))
+		{
+			$userId = $user->getId();
+		}
 		return $userRepo->findById($userId);
 	}
 
