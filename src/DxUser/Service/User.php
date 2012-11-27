@@ -436,6 +436,17 @@ class User extends DxService
 	}
 	
 	/**
+	 * @TODO
+	 * Convert a given time into user's local timezone
+	 * @param mized $dateTime
+	 * @return object \Datetime
+	 */
+	public function toUserTimezone($dateTime)
+	{
+		return $dateTime;
+	}
+	
+	/**
 	 * Check if a user is loggedIn
 	 * @param object $user DxUser\Entity\User
 	 * @TODO check if a certain user is login
