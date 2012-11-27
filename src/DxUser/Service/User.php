@@ -454,7 +454,7 @@ class User extends DxService
 	 */
 	public function getCurrentUser()
 	{
-		if ($this->getAuth()->hasIdentity())
+		if ($this->getAuth()->hasIdentity() && $this->getAuth() instanceof \Zend\Authentication\AuthenticationService)
 		{
 			return $this->getUserById($this->getAuth()->getIdentity()->getId());
 		}
