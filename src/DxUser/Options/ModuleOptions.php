@@ -2,9 +2,9 @@
 
 namespace DxUser\Options;
 
-use Zend\Stdlib\AbstractOptions;
+use Dxapp\Options\Options;
 
-class ModuleOptions extends AbstractOptions
+class ModuleOptions extends Options
 {
 
 	/**
@@ -111,7 +111,21 @@ class ModuleOptions extends AbstractOptions
 	 * @var type 
 	 */
 	protected $xmlFormFolder = NULL;
+	
+	/**
+	 * The Email of the email verification sender 
+	 */
+	protected $emailNoReplySender = 'no-reply@amigoas.com';
 
+	
+	/**
+	 * The Email of the email verification sender 
+	 */
+	public function setEmailNoReplySender($email)
+	{
+		$this->emailNoReplySender = $email;
+	}
+	
 	/**
 	 * Send email after a successfull password update
 	 * @param boolean $flag Send email after a password update

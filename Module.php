@@ -55,7 +55,7 @@ class Module
 				'dxuser_form_login' => function($sm)
 				{
 					$options = $sm->get('dxuser_module_options');
-					$form = new \Dxapp\Form\Form('login','login.xml', $options, $sm);
+					$form = new \Dxapp\Form\Form('login', 'login.xml', $options, $sm);
 					$form->setInputFilter(new \Dxapp\InputFilter\InputFilter('login.xml', $options, $sm));
 					return $form;
 				},
